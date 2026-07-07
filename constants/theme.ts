@@ -1,53 +1,39 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { ThemeColors } from '@/types';
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+export const lightTheme: ThemeColors = {
+  primary: '#6B4226',
+  primaryDark: '#4A2E17',
+  primaryLight: '#8B6342',
+  secondary: '#D4A843',
+  secondaryDark: '#B8922F',
+  secondaryLight: '#E8C96A',
+  background: '#FFF8F0',
+  surface: '#FFFFFF',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#5C5C5C',
+  border: '#E0D5C7',
+  error: '#D32F2F',
+  success: '#388E3C',
+  tabBarBackground: '#FFFFFF',
+  tabBarActive: '#6B4226',
+  tabBarInactive: '#9E9E9E',
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const darkTheme: ThemeColors = {
+  primary: '#C49A6C',
+  primaryDark: '#A07A50',
+  primaryLight: '#D4B48A',
+  secondary: '#E8C96A',
+  secondaryDark: '#D4A843',
+  secondaryLight: '#F0D98A',
+  background: '#1A1410',
+  surface: '#2C2218',
+  textPrimary: '#F5F0E8',
+  textSecondary: '#B0A898',
+  border: '#3D3228',
+  error: '#EF5350',
+  success: '#66BB6A',
+  tabBarBackground: '#2C2218',
+  tabBarActive: '#E8C96A',
+  tabBarInactive: '#6B6B6B',
+};
