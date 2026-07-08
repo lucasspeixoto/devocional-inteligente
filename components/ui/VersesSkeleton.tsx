@@ -1,8 +1,14 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+} from "react-native-reanimated";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function VersesSkeleton() {
   const { colors } = useTheme();
@@ -13,10 +19,10 @@ export function VersesSkeleton() {
     opacity.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 800 }),
-        withTiming(0.4, { duration: 800 })
+        withTiming(0.4, { duration: 800 }),
       ),
       -1,
-      true
+      true,
     );
   }, [opacity]);
 
@@ -26,19 +32,25 @@ export function VersesSkeleton() {
 
   const renderSkeletonVerse = (lines: number, key: number) => (
     <View key={key} style={styles.verseRow}>
-      <Animated.View style={[styles.skeletonNumber, { backgroundColor: colors.border }, animatedStyle]} />
+      <Animated.View
+        style={[
+          styles.skeletonNumber,
+          { backgroundColor: colors.border },
+          animatedStyle,
+        ]}
+      />
       <View style={styles.textContainer}>
         {Array.from({ length: lines }).map((_, i) => (
-          <Animated.View 
-            key={i} 
+          <Animated.View
+            key={i}
             style={[
-              styles.skeletonLine, 
-              { 
+              styles.skeletonLine,
+              {
                 backgroundColor: colors.border,
-                width: i === lines - 1 ? '60%' : '100%' 
-              }, 
-              animatedStyle
-            ]} 
+                width: i === lines - 1 ? "60%" : "100%",
+              },
+              animatedStyle,
+            ]}
           />
         ))}
       </View>
@@ -69,10 +81,10 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    width: '100%',
+    width: "100%",
   },
   verseRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 24,
     gap: 12,
   },
@@ -90,5 +102,5 @@ const styles = StyleSheet.create({
   skeletonLine: {
     height: 12,
     borderRadius: 6,
-  }
+  },
 });

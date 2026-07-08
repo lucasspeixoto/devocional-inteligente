@@ -1,32 +1,43 @@
-import { Card } from '@/components/ui/Card';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
-import { QuoteCard } from '@/components/ui/QuoteCard';
-import { typography } from '@/constants/typography';
-import { useDatabase } from '@/contexts/DatabaseContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useBooks } from '@/hooks/useBooks';
-import { getBookByAbbrev } from '@/services/repositories/booksRepository';
-import { getPreferences } from '@/services/repositories/preferencesRepository';
-import { getChapterVerses } from '@/services/repositories/versesRepository';
-import { LocalVerse } from '@/types';
-import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { QuoteCard } from "@/components/ui/QuoteCard";
+import { typography } from "@/constants/typography";
+import { useDatabase } from "@/contexts/DatabaseContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useBooks } from "@/hooks/useBooks";
+import { getBookByAbbrev } from "@/services/repositories/booksRepository";
+import { getPreferences } from "@/services/repositories/preferencesRepository";
+import { getChapterVerses } from "@/services/repositories/versesRepository";
+import { LocalVerse } from "@/types";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeIndex() {
   const db = useDatabase();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  
-  // Ensure books are synced from API on first launch
-  const { books, loading: booksLoading, error: booksError, refresh: refreshBooks } = useBooks();
 
-  const [lastBookAbbrev, setLastBookAbbrev] = useState<string>('gn');
-  const [lastBookName, setLastBookName] = useState<string>('Gênesis');
+  // Ensure books are synced from API on first launch
+  const {
+    books,
+    loading: booksLoading,
+    error: booksError,
+    refresh: refreshBooks,
+  } = useBooks();
+
+  const [lastBookAbbrev, setLastBookAbbrev] = useState<string>("gn");
+  const [lastBookName, setLastBookName] = useState<string>("Gênesis");
   const [lastChapter, setLastChapter] = useState<number>(1);
   const [lastVerse, setLastVerse] = useState<number | null>(null);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
@@ -36,11 +47,11 @@ export default function HomeIndex() {
     try {
       setLoadingPrefs(true);
       const prefs = await getPreferences(db);
-      
-      const abbrev = prefs.last_book_abbrev || 'gn';
+
+      const abbrev = prefs.last_book_abbrev || "gn";
       const chap = prefs.last_chapter || 1;
       const vers = prefs.last_verse || null;
-      
+
       setLastBookAbbrev(abbrev);
       setLastChapter(chap);
       setLastVerse(vers);
@@ -52,10 +63,15 @@ export default function HomeIndex() {
       }
 
       // Fetch preview verses
-      const verses = await getChapterVerses(db, abbrev, chap, prefs.selected_version || 'nvi');
+      const verses = await getChapterVerses(
+        db,
+        abbrev,
+        chap,
+        prefs.selected_version || "nvi",
+      );
       setPreviewVerses(verses.slice(0, 3)); // show first 3 verses as preview
     } catch (e) {
-      console.error('Error loading preferences on Home:', e);
+      console.error("Error loading preferences on Home:", e);
     } finally {
       setLoadingPrefs(false);
     }
@@ -67,12 +83,14 @@ export default function HomeIndex() {
       if (!booksLoading && books.length > 0) {
         loadPreferences();
       }
-    }, [booksLoading, books.length, loadPreferences])
+    }, [booksLoading, books.length, loadPreferences]),
   );
 
   if (booksLoading || (loadingPrefs && books.length > 0)) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
         <LoadingIndicator message="Inicializando biblioteca..." />
       </View>
     );
@@ -80,8 +98,13 @@ export default function HomeIndex() {
 
   if (booksError) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <ErrorState message="Não foi possível carregar os livros da Bíblia." onRetry={refreshBooks} />
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
+        <ErrorState
+          message="Não foi possível carregar os livros da Bíblia."
+          onRetry={refreshBooks}
+        />
       </View>
     );
   }
@@ -91,12 +114,23 @@ export default function HomeIndex() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
+    >
       <View style={styles.header}>
-        <Text style={[styles.welcomeText, typography.bodySmall, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.welcomeText,
+            typography.bodySmall,
+            { color: colors.textSecondary },
+          ]}
+        >
           Bem-vindo ao
         </Text>
-        <Text style={[styles.title, typography.heading1, { color: colors.primary }]}>
+        <Text
+          style={[styles.title, typography.heading1, { color: colors.primary }]}
+        >
           Devocional Inteligente
         </Text>
       </View>
@@ -105,31 +139,73 @@ export default function HomeIndex() {
         <Card style={styles.card}>
           <View style={styles.cardHeader}>
             <Ionicons name="book-outline" size={24} color={colors.primary} />
-            <Text style={[styles.cardTitle, typography.label, { color: colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.cardTitle,
+                typography.label,
+                { color: colors.textSecondary },
+              ]}
+            >
               Última Leitura
             </Text>
           </View>
 
-          <Text style={[styles.bookName, typography.heading1, { color: colors.textPrimary }]}>
+          <Text
+            style={[
+              styles.bookName,
+              typography.heading1,
+              { color: colors.textPrimary },
+            ]}
+          >
             {lastBookName}
           </Text>
-          
-          <Text style={[styles.chapterText, typography.heading2, { color: colors.primary }]}>
-            Capítulo {lastChapter} {lastVerse ? `: ${lastVerse}` : ''}
+
+          <Text
+            style={[
+              styles.chapterText,
+              typography.heading2,
+              { color: colors.primary },
+            ]}
+          >
+            Capítulo {lastChapter} {lastVerse ? `: ${lastVerse}` : ""}
           </Text>
 
           {previewVerses.length > 0 ? (
             <View style={styles.previewContainer}>
               {previewVerses.map((verse) => (
-                <Text key={verse.verse_number} numberOfLines={2} style={[styles.previewText, typography.bodySmall, { color: colors.textSecondary }]}>
-                  <Text style={{ color: colors.secondary, fontWeight: 'bold' }}>{verse.verse_number} </Text>
+                <Text
+                  key={verse.verse_number}
+                  numberOfLines={2}
+                  style={[
+                    styles.previewText,
+                    typography.bodySmall,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  <Text style={{ color: colors.secondary, fontWeight: "bold" }}>
+                    {verse.verse_number}{" "}
+                  </Text>
                   {verse.text}
                 </Text>
               ))}
-              <Text style={[styles.dots, typography.bodySmall, { color: colors.textSecondary }]}>...</Text>
+              <Text
+                style={[
+                  styles.dots,
+                  typography.bodySmall,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                ...
+              </Text>
             </View>
           ) : (
-            <Text style={[styles.emptyPreview, typography.body, { color: colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.emptyPreview,
+                typography.body,
+                { color: colors.textSecondary },
+              ]}
+            >
               Nenhuma leitura iniciada ainda. Toque para iniciar uma nova.
             </Text>
           )}
@@ -139,14 +215,25 @@ export default function HomeIndex() {
             onPress={handleOpenReading}
             activeOpacity={0.8}
           >
-            <Text style={[styles.buttonText, typography.label, { color: '#FFFFFF' }]}>
+            <Text
+              style={[
+                styles.buttonText,
+                typography.label,
+                { color: "#FFFFFF" },
+              ]}
+            >
               Continuar Leitura
             </Text>
-            <Ionicons name="arrow-forward-outline" size={20} color="#FFFFFF" style={{ marginLeft: 8 }} />
+            <Ionicons
+              name="arrow-forward-outline"
+              size={20}
+              color="#FFFFFF"
+              style={{ marginLeft: 8 }}
+            />
           </TouchableOpacity>
         </Card>
       </Animated.View>
-      
+
       <QuoteCard />
     </ScrollView>
   );
@@ -157,50 +244,50 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 30
+    paddingBottom: 30,
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     marginBottom: 16,
   },
   welcomeText: {
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1.5,
     marginBottom: 4,
   },
   title: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   card: {
     padding: 24,
     marginBottom: 24,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   cardTitle: {
     marginLeft: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   bookName: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   chapterText: {
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
   },
   previewContainer: {
     borderLeftWidth: 2,
-    borderLeftColor: '#E8D5C4',
+    borderLeftColor: "#E8D5C4",
     paddingLeft: 12,
     marginBottom: 20,
   },
@@ -213,20 +300,20 @@ const styles = StyleSheet.create({
   },
   emptyPreview: {
     marginBottom: 20,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   button: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 14,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     elevation: 3,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
   },
   buttonText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

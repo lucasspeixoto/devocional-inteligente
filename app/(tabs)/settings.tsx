@@ -1,14 +1,31 @@
-import React from 'react';
-import { View, StyleSheet, Text, Switch, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSettings } from '@/hooks/useSettings';
-import { typography } from '@/constants/typography';
-import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { Card } from '@/components/ui/Card';
-import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { typography } from "@/constants/typography";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useSettings } from "@/hooks/useSettings";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const VERSION_NAMES: Record<string, string> = {
+  acf: "Almeida Corrigida Fiel",
+  apee: "Bíblia básica em Francês",
+  bbe: "Bíblia básica em Inglês",
+  kjv: "Bíblia King James",
+  nvi: "Nova Versão Internacional",
+  ra: "Revista atualizada",
+  rvr: "Reina Vieira",
+};
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -24,7 +41,9 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
         <LoadingIndicator message="Carregando configurações..." />
       </View>
     );
@@ -32,16 +51,30 @@ export default function SettingsScreen() {
 
   if (error) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <ErrorState message="Não foi possível obter as versões da Bíblia." onRetry={refresh} />
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
+        <ErrorState
+          message="Não foi possível obter as versões da Bíblia."
+          onRetry={refresh}
+        />
       </View>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
+    >
       <View style={styles.header}>
-        <Text style={[styles.title, typography.heading1, { color: colors.textPrimary }]}>
+        <Text
+          style={[
+            styles.title,
+            typography.heading1,
+            { color: colors.textPrimary },
+          ]}
+        >
           Configurações
         </Text>
       </View>
@@ -49,18 +82,40 @@ export default function SettingsScreen() {
       <Animated.View entering={FadeInUp.duration(400)}>
         <Card style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="color-palette-outline" size={22} color={colors.primary} />
-            <Text style={[styles.cardTitle, typography.label, { color: colors.textSecondary }]}>
+            <Ionicons
+              name="color-palette-outline"
+              size={22}
+              color={colors.primary}
+            />
+            <Text
+              style={[
+                styles.cardTitle,
+                typography.label,
+                { color: colors.textSecondary },
+              ]}
+            >
               Aparência
             </Text>
           </View>
 
           <View style={styles.row}>
             <View style={styles.rowLeft}>
-              <Text style={[styles.rowLabel, typography.body, { color: colors.textPrimary }]}>
+              <Text
+                style={[
+                  styles.rowLabel,
+                  typography.body,
+                  { color: colors.textPrimary },
+                ]}
+              >
                 Tema Escuro
               </Text>
-              <Text style={[styles.rowSub, typography.bodySmall, { color: colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.rowSub,
+                  typography.bodySmall,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Alternar entre cores claras e escuras
               </Text>
             </View>
@@ -68,7 +123,7 @@ export default function SettingsScreen() {
               value={isDark}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: colors.secondaryLight }}
-              thumbColor={isDark ? colors.secondary : '#f4f3f4'}
+              thumbColor={isDark ? colors.secondary : "#f4f3f4"}
             />
           </View>
         </Card>
@@ -77,19 +132,32 @@ export default function SettingsScreen() {
       <Animated.View entering={FadeInUp.duration(400).delay(100)}>
         <Card style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="language-outline" size={22} color={colors.primary} />
-            <Text style={[styles.cardTitle, typography.label, { color: colors.textSecondary }]}>
+            <Ionicons name="bookmark" size={22} color={colors.primary} />
+            <Text
+              style={[
+                styles.cardTitle,
+                typography.label,
+                { color: colors.textSecondary },
+              ]}
+            >
               Versão da Bíblia
             </Text>
           </View>
 
-          <Text style={[styles.sectionSub, typography.bodySmall, { color: colors.textSecondary, marginBottom: 12 }]}>
-            Selecione a tradução para leitura offline e online:
+          <Text
+            style={[
+              styles.sectionSub,
+              typography.bodySmall,
+              { color: colors.textSecondary, marginBottom: 12 },
+            ]}
+          >
+            Selecione a versão da bíblia para leitura
           </Text>
 
           <View style={styles.versionsList}>
             {versions.map((v) => {
-              const isActive = v.version.toLowerCase() === selectedVersion.toLowerCase();
+              const isActive =
+                v.version.toLowerCase() === selectedVersion.toLowerCase();
               return (
                 <TouchableOpacity
                   key={v.version}
@@ -97,7 +165,9 @@ export default function SettingsScreen() {
                     styles.versionItem,
                     {
                       borderColor: isActive ? colors.secondary : colors.border,
-                      backgroundColor: isActive ? `${colors.secondary}15` : colors.surface,
+                      backgroundColor: isActive
+                        ? `${colors.secondary}15`
+                        : colors.surface,
                     },
                   ]}
                   onPress={() => setVersion(v.version)}
@@ -110,27 +180,45 @@ export default function SettingsScreen() {
                         typography.label,
                         {
                           color: isActive ? colors.primary : colors.textPrimary,
-                          fontWeight: isActive ? '700' : '500',
-                          textTransform: 'uppercase',
+                          fontWeight: isActive ? "700" : "500",
                         },
                       ]}
                     >
-                      {v.version}
+                      {v.version.toUpperCase()} -{" "}
+                      {VERSION_NAMES[v.version.toLowerCase()] || "Desconhecida"}
                     </Text>
-                    <Text style={[styles.versionSub, typography.bodySmall, { color: colors.textSecondary }]}>
-                      {v.verses.toLocaleString('pt-BR')} versos
+                    <Text
+                      style={[
+                        styles.versionSub,
+                        typography.bodySmall,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {v.verses.toLocaleString("pt-BR")} versículos
                     </Text>
                   </View>
-                  {isActive && <Ionicons name="checkmark-circle" size={22} color={colors.secondary} />}
+                  {isActive && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color={colors.secondary}
+                    />
+                  )}
                 </TouchableOpacity>
               );
             })}
           </View>
         </Card>
       </Animated.View>
-      
+
       <View style={styles.footer}>
-        <Text style={[styles.footerText, typography.bodySmall, { color: colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.footerText,
+            typography.bodySmall,
+            { color: colors.textSecondary },
+          ]}
+        >
           Devocional Inteligente v1.0.0
         </Text>
       </View>
@@ -146,44 +234,44 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     marginBottom: 24,
   },
   title: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   card: {
     marginBottom: 20,
     padding: 20,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#0000000a',
+    borderBottomColor: "#0000000a",
     paddingBottom: 8,
   },
   cardTitle: {
     marginLeft: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   rowLeft: {
     flex: 1,
     paddingRight: 16,
   },
   rowLabel: {
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   rowSub: {
@@ -196,18 +284,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   versionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
   },
   versionItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 4,
   },
   versionText: {
     minWidth: 50,
@@ -218,7 +306,7 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 20,
     marginBottom: 60,
-    alignItems: 'center',
+    alignItems: "center",
   },
   footerText: {
     fontSize: 12,

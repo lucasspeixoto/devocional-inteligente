@@ -74,7 +74,7 @@ export interface LocalNote {
 export interface UserPreferences {
   id: number;
   selected_version: string;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   last_book_abbrev: string | null;
   last_chapter: number | null;
   last_verse: number | null;

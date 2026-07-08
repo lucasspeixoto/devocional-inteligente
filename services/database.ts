@@ -1,17 +1,17 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from "expo-sqlite";
 
 let databaseInstance: SQLite.SQLiteDatabase | null = null;
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!databaseInstance) {
-    databaseInstance = await SQLite.openDatabaseAsync('bible_reader.db');
+    databaseInstance = await SQLite.openDatabaseAsync("bible_reader.db");
   }
   return databaseInstance;
 }
 
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
   const db = await getDatabase();
-  
+
   // Create tables according to spec and design
   await db.execAsync(`
     PRAGMA foreign_keys = ON;
@@ -65,11 +65,13 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
   `);
 
   // Initialize default preferences if empty
-  const defaultPrefs = await db.getFirstAsync<{ id: number }>('SELECT id FROM user_preferences WHERE id = 1');
+  const defaultPrefs = await db.getFirstAsync<{ id: number }>(
+    "SELECT id FROM user_preferences WHERE id = 1",
+  );
   if (!defaultPrefs) {
     await db.runAsync(
       `INSERT INTO user_preferences (id, selected_version, theme, last_book_abbrev, last_chapter, last_verse) 
-       VALUES (1, 'nvi', 'light', NULL, NULL, NULL)`
+       VALUES (1, 'nvi', 'light', NULL, NULL, NULL)`,
     );
   }
 

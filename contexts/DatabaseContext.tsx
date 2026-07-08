@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import * as SQLite from 'expo-sqlite';
-import * as SplashScreen from 'expo-splash-screen';
-import { initDatabase } from '@/services/database';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import * as SQLite from "expo-sqlite";
+import * as SplashScreen from "expo-splash-screen";
+import { initDatabase } from "@/services/database";
 
 // Prevent auto hiding of splash screen
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -18,7 +18,9 @@ const DatabaseContext = createContext<DatabaseContextType>({
   loading: true,
 });
 
-export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,13 +29,13 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         const initializedDb = await initDatabase();
         setDb(initializedDb);
-      } catch (e) {
-        console.error('Error during database initialization:', e);
+      } catch {
+        console.error("Error during database initialization:");
       } finally {
         setLoading(false);
         try {
           await SplashScreen.hideAsync();
-        } catch (e) {
+        } catch {
           // Ignore splash screen errors
         }
       }
@@ -56,7 +58,9 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export function useDatabase(): SQLite.SQLiteDatabase {
   const context = useContext(DatabaseContext);
   if (!context.db) {
-    throw new Error('useDatabase must be used within a DatabaseProvider and after it has finished loading.');
+    throw new Error(
+      "useDatabase must be used within a DatabaseProvider and after it has finished loading.",
+    );
   }
   return context.db;
 }

@@ -1,7 +1,10 @@
-import { SQLiteDatabase } from 'expo-sqlite';
-import { Book, LocalBook } from '@/types';
+import { SQLiteDatabase } from "expo-sqlite";
+import { Book, LocalBook } from "@/types";
 
-export async function insertBooks(db: SQLiteDatabase, books: Book[]): Promise<void> {
+export async function insertBooks(
+  db: SQLiteDatabase,
+  books: Book[],
+): Promise<void> {
   await db.withTransactionAsync(async () => {
     for (const book of books) {
       await db.runAsync(
@@ -20,25 +23,29 @@ export async function insertBooks(db: SQLiteDatabase, books: Book[]): Promise<vo
           book.group,
           book.chapters,
           book.testament,
-          'all'
-        ]
+          "all",
+        ],
       );
     }
   });
 }
 
-export async function updateBookComment(db: SQLiteDatabase, abbrev: string, comment: string): Promise<void> {
-  await db.runAsync(
-    'UPDATE books SET comment = ? WHERE abbrev = ?',
-    [comment, abbrev]
-  );
+export async function updateBookComment(
+  db: SQLiteDatabase,
+  abbrev: string,
+  comment: string,
+): Promise<void> {
+  await db.runAsync("UPDATE books SET comment = ? WHERE abbrev = ?", [
+    comment,
+    abbrev,
+  ]);
 }
 
 export async function getAllBooks(db: SQLiteDatabase): Promise<LocalBook[]> {
-  const rows = await db.getAllAsync<any>(
-    'SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books'
+  const rows = await db.getAllAsync<LocalBook>(
+    "SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books",
   );
-  return rows.map(row => ({
+  return rows.map((row) => ({
     abbrev_pt: row.abbrev_pt,
     abbrev_en: row.abbrev_pt, // Defaulting en to pt since we only need the key
     name: row.name,
@@ -46,14 +53,17 @@ export async function getAllBooks(db: SQLiteDatabase): Promise<LocalBook[]> {
     chapters: row.chapters,
     group_name: row.group_name,
     testament: row.testament,
-    comment: row.comment
+    comment: row.comment,
   }));
 }
 
-export async function getBookByAbbrev(db: SQLiteDatabase, abbrev: string): Promise<LocalBook | null> {
-  const row = await db.getFirstAsync<any>(
-    'SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books WHERE abbrev = ?',
-    [abbrev]
+export async function getBookByAbbrev(
+  db: SQLiteDatabase,
+  abbrev: string,
+): Promise<LocalBook | null> {
+  const row = await db.getFirstAsync<LocalBook>(
+    "SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books WHERE abbrev = ?",
+    [abbrev],
   );
   if (!row) return null;
   return {
@@ -64,16 +74,19 @@ export async function getBookByAbbrev(db: SQLiteDatabase, abbrev: string): Promi
     chapters: row.chapters,
     group_name: row.group_name,
     testament: row.testament,
-    comment: row.comment
+    comment: row.comment,
   };
 }
 
-export async function getBooksByTestament(db: SQLiteDatabase, testament: string): Promise<LocalBook[]> {
-  const rows = await db.getAllAsync<any>(
-    'SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books WHERE testament = ?',
-    [testament]
+export async function getBooksByTestament(
+  db: SQLiteDatabase,
+  testament: string,
+): Promise<LocalBook[]> {
+  const rows = await db.getAllAsync<LocalBook>(
+    "SELECT abbrev as abbrev_pt, name, author, group_name, chapters, testament, comment FROM books WHERE testament = ?",
+    [testament],
   );
-  return rows.map(row => ({
+  return rows.map((row) => ({
     abbrev_pt: row.abbrev_pt,
     abbrev_en: row.abbrev_pt,
     name: row.name,
@@ -81,6 +94,6 @@ export async function getBooksByTestament(db: SQLiteDatabase, testament: string)
     chapters: row.chapters,
     group_name: row.group_name,
     testament: row.testament,
-    comment: row.comment
+    comment: row.comment,
   }));
 }

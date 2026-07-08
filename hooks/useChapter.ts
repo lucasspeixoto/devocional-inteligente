@@ -1,10 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useDatabase } from '@/contexts/DatabaseContext';
-import { LocalVerse } from '@/types';
-import { getChapterVerses, hasChapterCached, insertChapterVerses } from '@/services/repositories/versesRepository';
-import { getChapterVerses as fetchChapterVersesFromApi } from '@/services/api';
+import { useState, useEffect, useCallback } from "react";
+import { useDatabase } from "@/contexts/DatabaseContext";
+import { LocalVerse } from "@/types";
+import {
+  getChapterVerses,
+  hasChapterCached,
+  insertChapterVerses,
+} from "@/services/repositories/versesRepository";
+import { getChapterVerses as fetchChapterVersesFromApi } from "@/services/api";
 
-export function useChapter(bookAbbrev: string | null, chapterNumber: number | null, version: string) {
+export function useChapter(
+  bookAbbrev: string | null,
+  chapterNumber: number | null,
+  version: string,
+) {
   const db = useDatabase();
   const [verses, setVerses] = useState<LocalVerse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -19,24 +27,49 @@ export function useChapter(bookAbbrev: string | null, chapterNumber: number | nu
     setLoading(true);
     setError(null);
     try {
-      const isCached = await hasChapterCached(db, bookAbbrev, chapterNumber, version);
-      
+      const isCached = await hasChapterCached(
+        db,
+        bookAbbrev,
+        chapterNumber,
+        version,
+      );
+
       if (isCached) {
-        const localVerses = await getChapterVerses(db, bookAbbrev, chapterNumber, version);
+        const localVerses = await getChapterVerses(
+          db,
+          bookAbbrev,
+          chapterNumber,
+          version,
+        );
         setVerses(localVerses);
       } else {
         // Clear verses immediately to show loading indicator during API fetch
         setVerses([]);
-        
+
         // Fetch from API
-        const apiResponse = await fetchChapterVersesFromApi(version, bookAbbrev, chapterNumber);
+        const apiResponse = await fetchChapterVersesFromApi(
+          version,
+          bookAbbrev,
+          chapterNumber,
+        );
         // Insert into local DB
-        await insertChapterVerses(db, apiResponse.verses, bookAbbrev, chapterNumber, version);
+        await insertChapterVerses(
+          db,
+          apiResponse.verses,
+          bookAbbrev,
+          chapterNumber,
+          version,
+        );
         // Load from local DB
-        const localVerses = await getChapterVerses(db, bookAbbrev, chapterNumber, version);
+        const localVerses = await getChapterVerses(
+          db,
+          bookAbbrev,
+          chapterNumber,
+          version,
+        );
         setVerses(localVerses);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(`Error loading chapter ${bookAbbrev} ${chapterNumber}:`, e);
       setError(e instanceof Error ? e : new Error(String(e)));
     } finally {

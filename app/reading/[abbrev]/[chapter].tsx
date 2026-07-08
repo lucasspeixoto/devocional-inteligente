@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -9,68 +9,82 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useDatabase } from '@/contexts/DatabaseContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useBooks } from '@/hooks/useBooks';
-import { useChapter } from '@/hooks/useChapter';
-import { useNotes } from '@/hooks/useNotes';
-import { setLastReadPosition, getSelectedVersion } from '@/services/repositories/preferencesRepository';
-import { getBookByAbbrev } from '@/services/repositories/booksRepository';
-import { getNotesCountByChapter } from '@/services/repositories/notesRepository';
-import { typography } from '@/constants/typography';
-import { VersesSkeleton } from '@/components/ui/VersesSkeleton';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { Card } from '@/components/ui/Card';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+  Alert,
+} from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { useDatabase } from "@/contexts/DatabaseContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useBooks } from "@/hooks/useBooks";
+import { useChapter } from "@/hooks/useChapter";
+import { useNotes } from "@/hooks/useNotes";
+import {
+  setLastReadPosition,
+  getSelectedVersion,
+} from "@/services/repositories/preferencesRepository";
+import { getBookByAbbrev } from "@/services/repositories/booksRepository";
+import { getNotesCountByChapter } from "@/services/repositories/notesRepository";
+import { typography } from "@/constants/typography";
+import { VersesSkeleton } from "@/components/ui/VersesSkeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { Card } from "@/components/ui/Card";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-  runOnJS
-} from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  runOnJS,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ReadingScreen() {
-  const { abbrev, chapter } = useLocalSearchParams<{ abbrev: string; chapter: string }>();
+  const { abbrev, chapter } = useLocalSearchParams<{
+    abbrev: string;
+    chapter: string;
+  }>();
   const db = useDatabase();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  
-  const currentChapterNum = parseInt(chapter || '1', 10);
-  
+
+  const currentChapterNum = parseInt(chapter || "1", 10);
+
   // Load books list to handle next/prev book logic
   const { books } = useBooks();
-  
-  const [selectedVersion, setSelectedVersion] = useState('nvi');
-  const [currentBookName, setCurrentBookName] = useState('');
+
+  const [selectedVersion, setSelectedVersion] = useState("nvi");
+  const [currentBookName, setCurrentBookName] = useState("");
   const [maxChapters, setMaxChapters] = useState(50);
-  
+
   // Verses state
-  const { verses, loading, error, reload } = useChapter(abbrev, currentChapterNum, selectedVersion);
-  
+  const { verses, loading, error, reload } = useChapter(
+    abbrev,
+    currentChapterNum,
+    selectedVersion,
+  );
+
   // Notes count map (verse_number -> notes count)
   const [notesCount, setNotesCount] = useState<Record<number, number>>({});
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedVerseNum, setSelectedVerseNum] = useState<number | null>(null);
-  const [newNoteContent, setNewNoteContent] = useState('');
-  
+  const [newNoteContent, setNewNoteContent] = useState("");
+
   // Delete confirm state
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [noteIdToDelete, setNoteIdToDelete] = useState<number | null>(null);
-  
+
   // Reference for ScrollView reset
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   // Swipe animation values
   const translationX = useSharedValue(0);
-  const lastDirection = useRef<'next' | 'prev' | null>(null);
+  const lastDirection = useRef<"next" | "prev" | null>(null);
 
   // Load preferences
   useEffect(() => {
@@ -78,18 +92,18 @@ export default function ReadingScreen() {
       try {
         const ver = await getSelectedVersion(db);
         setSelectedVersion(ver);
-        
+
         // Load book details
         const b = await getBookByAbbrev(db, abbrev);
         if (b) {
           setCurrentBookName(b.name);
           setMaxChapters(b.chapters);
         }
-        
+
         // Save current position as last read position
         await setLastReadPosition(db, abbrev, currentChapterNum);
       } catch (e) {
-        console.error('Error loading preferences/book info in reader:', e);
+        console.error("Error loading preferences/book info in reader:", e);
       }
     }
     loadPrefs();
@@ -98,10 +112,15 @@ export default function ReadingScreen() {
   // Load notes count for current chapter
   const loadNotesCount = useCallback(async () => {
     try {
-      const counts = await getNotesCountByChapter(db, abbrev, currentChapterNum, selectedVersion);
+      const counts = await getNotesCountByChapter(
+        db,
+        abbrev,
+        currentChapterNum,
+        selectedVersion,
+      );
       setNotesCount(counts);
     } catch (e) {
-      console.error('Error loading notes counts:', e);
+      console.error("Error loading notes counts:", e);
     }
   }, [db, abbrev, currentChapterNum, selectedVersion]);
 
@@ -113,12 +132,12 @@ export default function ReadingScreen() {
   const {
     notes: verseNotes,
     addNote: createVerseNote,
-    removeNote: deleteVerseNote
+    removeNote: deleteVerseNote,
   } = useNotes(
     modalVisible ? abbrev : null,
     modalVisible ? currentChapterNum : null,
     modalVisible ? selectedVerseNum : null,
-    modalVisible ? selectedVersion : null
+    modalVisible ? selectedVersion : null,
   );
 
   // Animate slide-in when chapter changes
@@ -127,10 +146,10 @@ export default function ReadingScreen() {
       scrollViewRef.current.scrollTo({ y: 0, animated: false });
     }
 
-    if (lastDirection.current === 'next') {
+    if (lastDirection.current === "next") {
       translationX.value = 400; // Slide from right
       translationX.value = withTiming(0, { duration: 250 });
-    } else if (lastDirection.current === 'prev') {
+    } else if (lastDirection.current === "prev") {
       translationX.value = -400; // Slide from left
       translationX.value = withTiming(0, { duration: 250 });
     } else {
@@ -147,26 +166,29 @@ export default function ReadingScreen() {
     books[currentBookIndex] &&
     currentChapterNum === books[currentBookIndex].chapters;
 
-  const navigateToChapter = (dir: 'next' | 'prev') => {
-    if (dir === 'next') {
+  const navigateToChapter = (dir: "next" | "prev") => {
+    if (dir === "next") {
       if (currentChapterNum < maxChapters) {
-        lastDirection.current = 'next';
+        lastDirection.current = "next";
         router.setParams({ chapter: (currentChapterNum + 1).toString() });
       } else if (currentBookIndex < books.length - 1) {
         // Next book, chapter 1
         const nextBook = books[currentBookIndex + 1];
-        lastDirection.current = 'next';
-        router.setParams({ abbrev: nextBook.abbrev_pt, chapter: '1' });
+        lastDirection.current = "next";
+        router.setParams({ abbrev: nextBook.abbrev_pt, chapter: "1" });
       }
     } else {
       if (currentChapterNum > 1) {
-        lastDirection.current = 'prev';
+        lastDirection.current = "prev";
         router.setParams({ chapter: (currentChapterNum - 1).toString() });
       } else if (currentBookIndex > 0) {
         // Prev book, last chapter
         const prevBook = books[currentBookIndex - 1];
-        lastDirection.current = 'prev';
-        router.setParams({ abbrev: prevBook.abbrev_pt, chapter: prevBook.chapters.toString() });
+        lastDirection.current = "prev";
+        router.setParams({
+          abbrev: prevBook.abbrev_pt,
+          chapter: prevBook.chapters.toString(),
+        });
       }
     }
   };
@@ -194,7 +216,7 @@ export default function ReadingScreen() {
           translationX.value = withSpring(0);
         } else {
           translationX.value = withTiming(500, { duration: 150 }, () => {
-            runOnJS(navigateToChapter)('prev');
+            runOnJS(navigateToChapter)("prev");
           });
         }
       } else if (e.translationX < -100) {
@@ -203,7 +225,7 @@ export default function ReadingScreen() {
           translationX.value = withSpring(0);
         } else {
           translationX.value = withTiming(-500, { duration: 150 }, () => {
-            runOnJS(navigateToChapter)('next');
+            runOnJS(navigateToChapter)("next");
           });
         }
       } else {
@@ -218,22 +240,22 @@ export default function ReadingScreen() {
   const handleVerseLongPress = (verseNum: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedVerseNum(verseNum);
-    setNewNoteContent('');
+    setNewNoteContent("");
     setModalVisible(true);
   };
 
   const handleAddNote = async () => {
     if (!newNoteContent.trim()) {
-      Alert.alert('Erro', 'O texto da anotação é obrigatório.');
+      Alert.alert("Erro", "O texto da anotação é obrigatório.");
       return;
     }
     try {
       await createVerseNote(newNoteContent);
-      setNewNoteContent('');
+      setNewNoteContent("");
       await loadNotesCount();
     } catch (e) {
       console.error(e);
-      Alert.alert('Erro', 'Erro ao salvar anotação.');
+      Alert.alert("Erro", "Erro ao salvar anotação.");
     }
   };
 
@@ -257,18 +279,38 @@ export default function ReadingScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
         {/* Reader Header */}
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/(tabs)')}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.replace("/(tabs)")}
+          >
             <Ionicons name="close" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-          
+
           <View style={styles.headerTitleContainer}>
-            <Text style={[styles.bookTitle, typography.heading2, { color: colors.primary, fontWeight: '700' }]}>
+            <Text
+              style={[
+                styles.bookTitle,
+                typography.heading2,
+                { color: colors.primary, fontWeight: "700" },
+              ]}
+            >
               {currentBookName}
             </Text>
-            <Text style={[styles.chapterTitle, typography.bodySmall, { color: colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.chapterTitle,
+                typography.bodySmall,
+                { color: colors.textSecondary },
+              ]}
+            >
               Capítulo {currentChapterNum} • {selectedVersion.toUpperCase()}
             </Text>
           </View>
@@ -284,12 +326,18 @@ export default function ReadingScreen() {
               </ScrollView>
             ) : error ? (
               <View style={styles.centerContainer}>
-                <ErrorState message="Erro ao carregar versículos." onRetry={reload} />
+                <ErrorState
+                  message="Erro ao carregar versículos."
+                  onRetry={reload}
+                />
               </View>
             ) : (
               <ScrollView
                 ref={scrollViewRef}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: 60 + insets.bottom }]}
+                contentContainerStyle={[
+                  styles.scrollContent,
+                  { paddingBottom: 60 + insets.bottom },
+                ]}
                 showsVerticalScrollIndicator={false}
               >
                 {verses.length > 0 ? (
@@ -299,23 +347,35 @@ export default function ReadingScreen() {
                       <TouchableOpacity
                         key={verse.id || verse.verse_number}
                         style={styles.verseRow}
-                        onLongPress={() => handleVerseLongPress(verse.verse_number)}
+                        onLongPress={() =>
+                          handleVerseLongPress(verse.verse_number)
+                        }
                         activeOpacity={0.6}
                       >
-                        <Text style={[styles.verseText, typography.body, { color: colors.textPrimary }]}>
+                        <Text
+                          style={[
+                            styles.verseText,
+                            typography.body,
+                            { color: colors.textPrimary },
+                          ]}
+                        >
                           <Text
                             style={[
                               typography.verseNumber,
-                              { color: colors.secondary, fontWeight: 'bold' }
+                              { color: colors.secondary, fontWeight: "bold" },
                             ]}
                           >
-                            {verse.verse_number}{' '}
+                            {verse.verse_number}{" "}
                           </Text>
                           {verse.text}
                           {hasNotes && (
                             <Text>
-                              {'  '}
-                              <Ionicons name="document-text" size={14} color={colors.primary} />
+                              {"  "}
+                              <Ionicons
+                                name="document-text"
+                                size={14}
+                                color={colors.primary}
+                              />
                             </Text>
                           )}
                         </Text>
@@ -324,7 +384,12 @@ export default function ReadingScreen() {
                   })
                 ) : (
                   <View style={styles.emptyContainer}>
-                    <Text style={[typography.body, { color: colors.textSecondary, fontStyle: 'italic' }]}>
+                    <Text
+                      style={[
+                        typography.body,
+                        { color: colors.textSecondary, fontStyle: "italic" },
+                      ]}
+                    >
                       Nenhum versículo disponível.
                     </Text>
                   </View>
@@ -343,17 +408,43 @@ export default function ReadingScreen() {
           onRequestClose={() => setModalVisible(false)}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.modalOverlay}
           >
-            <View style={[styles.modalContent, { backgroundColor: colors.surface, paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24 }]}>
+            <View
+              style={[
+                styles.modalContent,
+                {
+                  backgroundColor: colors.surface,
+                  paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
+                },
+              ]}
+            >
               {/* Modal Header */}
-              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                <Text style={[typography.heading2, { color: colors.textPrimary, fontWeight: 'bold' }]}>
-                  Anotações: {currentBookName} {currentChapterNum}:{selectedVerseNum}
+              <View
+                style={[
+                  styles.modalHeader,
+                  { borderBottomColor: colors.border },
+                ]}
+              >
+                <Text
+                  style={[
+                    typography.heading2,
+                    { color: colors.textPrimary, fontWeight: "bold" },
+                  ]}
+                >
+                  Anotações: {currentBookName} {currentChapterNum}:
+                  {selectedVerseNum}
                 </Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCloseButton}>
-                  <Ionicons name="close" size={24} color={colors.textSecondary} />
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.modalCloseButton}
+                >
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={colors.textSecondary}
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -362,28 +453,61 @@ export default function ReadingScreen() {
                 {verseNotes.length > 0 ? (
                   verseNotes.map((note) => (
                     <Card key={note.id} style={styles.noteCard}>
-                      <Text style={[typography.body, { color: colors.textPrimary, marginBottom: 8 }]}>
+                      <Text
+                        style={[
+                          typography.body,
+                          { color: colors.textPrimary, marginBottom: 8 },
+                        ]}
+                      >
                         {note.content}
                       </Text>
                       <View style={styles.noteMetaRow}>
-                        <Text style={[typography.bodySmall, { color: colors.textSecondary, fontSize: 11 }]}>
-                          {new Date(note.updated_at).toLocaleDateString('pt-BR')}
+                        <Text
+                          style={[
+                            typography.bodySmall,
+                            { color: colors.textSecondary, fontSize: 11 },
+                          ]}
+                        >
+                          {new Date(note.updated_at).toLocaleDateString(
+                            "pt-BR",
+                          )}
                         </Text>
-                        <TouchableOpacity onPress={() => handleDeleteNote(note.id)}>
-                          <Ionicons name="trash-outline" size={18} color={colors.error} />
+                        <TouchableOpacity
+                          onPress={() => handleDeleteNote(note.id)}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={18}
+                            color={colors.error}
+                          />
                         </TouchableOpacity>
                       </View>
                     </Card>
                   ))
                 ) : (
-                  <Text style={[typography.body, { color: colors.textSecondary, fontStyle: 'italic', textAlign: 'center', marginTop: 24 }]}>
+                  <Text
+                    style={[
+                      typography.body,
+                      {
+                        color: colors.textSecondary,
+                        fontStyle: "italic",
+                        textAlign: "center",
+                        marginTop: 24,
+                      },
+                    ]}
+                  >
                     Nenhuma anotação para este versículo.
                   </Text>
                 )}
               </ScrollView>
 
               {/* Form Input */}
-              <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  { borderTopColor: colors.border },
+                ]}
+              >
                 <TextInput
                   placeholder="Escreva sua reflexão..."
                   placeholderTextColor={colors.textSecondary}
@@ -396,15 +520,23 @@ export default function ReadingScreen() {
                     {
                       color: colors.textPrimary,
                       backgroundColor: colors.background,
-                      borderColor: colors.border
-                    }
+                      borderColor: colors.border,
+                    },
                   ]}
                 />
                 <TouchableOpacity
-                  style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                  style={[
+                    styles.saveButton,
+                    { backgroundColor: colors.primary },
+                  ]}
                   onPress={handleAddNote}
                 >
-                  <Text style={[typography.label, { color: '#FFFFFF', fontWeight: 'bold' }]}>
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: "#FFFFFF", fontWeight: "bold" },
+                    ]}
+                  >
                     Salvar
                   </Text>
                 </TouchableOpacity>
@@ -422,28 +554,73 @@ export default function ReadingScreen() {
           onRequestClose={() => setDeleteConfirmVisible(false)}
         >
           <View style={styles.confirmOverlay}>
-            <Card style={[styles.confirmContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Ionicons name="trash-outline" size={44} color={colors.error} style={{ marginBottom: 16 }} />
-              <Text style={[typography.heading2, { color: colors.textPrimary, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }]}>
+            <Card
+              style={[
+                styles.confirmContent,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <Ionicons
+                name="trash-outline"
+                size={44}
+                color={colors.error}
+                style={{ marginBottom: 16 }}
+              />
+              <Text
+                style={[
+                  typography.heading2,
+                  {
+                    color: colors.textPrimary,
+                    fontWeight: "bold",
+                    marginBottom: 8,
+                    textAlign: "center",
+                  },
+                ]}
+              >
                 Confirmar Exclusão
               </Text>
-              <Text style={[typography.body, { color: colors.textSecondary, marginBottom: 24, textAlign: 'center' }]}>
+              <Text
+                style={[
+                  typography.body,
+                  {
+                    color: colors.textSecondary,
+                    marginBottom: 24,
+                    textAlign: "center",
+                  },
+                ]}
+              >
                 Deseja realmente excluir esta anotação permanentemente?
               </Text>
               <View style={styles.confirmButtons}>
                 <TouchableOpacity
-                  style={[styles.confirmButton, { borderColor: colors.border, borderWidth: 1 }]}
+                  style={[
+                    styles.confirmButton,
+                    { borderColor: colors.border, borderWidth: 1 },
+                  ]}
                   onPress={() => setDeleteConfirmVisible(false)}
                 >
-                  <Text style={[typography.label, { color: colors.textSecondary, fontWeight: 'bold' }]}>
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: colors.textSecondary, fontWeight: "bold" },
+                    ]}
+                  >
                     Cancelar
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.confirmButton, { backgroundColor: colors.error }]}
+                  style={[
+                    styles.confirmButton,
+                    { backgroundColor: colors.error },
+                  ]}
                   onPress={confirmDeleteNote}
                 >
-                  <Text style={[typography.label, { color: '#FFFFFF', fontWeight: 'bold' }]}>
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: "#FFFFFF", fontWeight: "bold" },
+                    ]}
+                  >
                     Excluir
                   </Text>
                 </TouchableOpacity>
@@ -463,13 +640,13 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
@@ -478,7 +655,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitleContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   bookTitle: {
     fontSize: 20,
@@ -502,24 +679,24 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 40,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: '#00000050',
+    justifyContent: "flex-end",
+    backgroundColor: "#00000050",
   },
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: '60%',
+    height: "60%",
     padding: 20,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderBottomWidth: 1,
     paddingBottom: 12,
     marginBottom: 12,
@@ -535,18 +712,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   noteMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: '#0000000a',
+    borderTopColor: "#0000000a",
     paddingTop: 8,
   },
   inputContainer: {
     borderTopWidth: 1,
     paddingTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   noteInput: {
@@ -562,33 +739,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   confirmOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#00000060',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#00000060",
     padding: 24,
   },
   confirmContent: {
-    width: '100%',
+    width: "100%",
     maxWidth: 320,
-    alignItems: 'center',
+    alignItems: "center",
     padding: 24,
     borderWidth: 1,
   },
   confirmButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
-    width: '100%',
+    width: "100%",
   },
   confirmButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

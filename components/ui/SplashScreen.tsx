@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
+} from "react-native";
 import Svg, {
   Circle,
   Ellipse,
@@ -15,25 +15,25 @@ import Svg, {
   Line,
   Path,
   Polygon,
-  Rect
-} from 'react-native-svg';
+  Rect,
+} from "react-native-svg";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 // ---------------------------------------------------------------------------
 // Paleta
 // ---------------------------------------------------------------------------
 const COLORS = {
-  bg: '#1a0f05',
-  bgCard: '#2a1505',
-  gold: '#d4a550',
-  goldDim: 'rgba(212,165,80,0.6)',
-  goldFaint: 'rgba(212,165,80,0.3)',
-  goldGhost: 'rgba(212,165,80,0.1)',
-  border: '#3a2510',
-  pageLine: 'rgba(212,165,80,0.25)',
-  pageLineStrong: 'rgba(212,165,80,0.35)',
-  shadow: 'rgba(0,0,0,0.4)',
+  bg: "#1a0f05",
+  bgCard: "#2a1505",
+  gold: "#d4a550",
+  goldDim: "rgba(212,165,80,0.6)",
+  goldFaint: "rgba(212,165,80,0.3)",
+  goldGhost: "rgba(212,165,80,0.1)",
+  border: "#3a2510",
+  pageLine: "rgba(212,165,80,0.25)",
+  pageLineStrong: "rgba(212,165,80,0.35)",
+  shadow: "rgba(0,0,0,0.4)",
 };
 
 // ---------------------------------------------------------------------------
@@ -49,9 +49,7 @@ const STARS = Array.from({ length: 60 }, (_, i) => ({
 }));
 
 function StarField() {
-  const anims = useRef(
-    STARS.map(() => new Animated.Value(0.1))
-  ).current;
+  const anims = useRef(STARS.map(() => new Animated.Value(0.1))).current;
 
   useEffect(() => {
     const loops = anims.map((anim, i) =>
@@ -70,8 +68,8 @@ function StarField() {
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
-      )
+        ]),
+      ),
     );
     loops.forEach((l) => l.start());
     return () => loops.forEach((l) => l.stop());
@@ -83,13 +81,13 @@ function StarField() {
         <Animated.View
           key={star.id}
           style={{
-            position: 'absolute',
+            position: "absolute",
             left: star.x,
             top: star.y,
             width: star.size,
             height: star.size,
             borderRadius: star.size / 2,
-            backgroundColor: '#fff',
+            backgroundColor: "#fff",
             opacity: anims[i],
           }}
         />
@@ -106,7 +104,10 @@ function BookSVG() {
     <Svg width={160} height={140} viewBox="0 0 160 140">
       {/* spine dashed line */}
       <Line
-        x1="80" y1="20" x2="80" y2="125"
+        x1="80"
+        y1="20"
+        x2="80"
+        y2="125"
         stroke={COLORS.goldFaint}
         strokeWidth="1"
         strokeDasharray="3,4"
@@ -132,7 +133,10 @@ function BookSVG() {
       {[38, 47, 56, 65, 74, 83].map((y, idx) => (
         <Line
           key={`ll${idx}`}
-          x1="28" y1={y} x2="72" y2={y}
+          x1="28"
+          y1={y}
+          x2="72"
+          y2={y}
           stroke={idx === 0 ? COLORS.pageLineStrong : COLORS.pageLine}
           strokeWidth={idx === 0 ? 0.8 : 0.6}
         />
@@ -142,22 +146,54 @@ function BookSVG() {
       {[38, 47, 56, 65, 74, 83].map((y, idx) => (
         <Line
           key={`rl${idx}`}
-          x1="88" y1={y} x2="132" y2={y}
+          x1="88"
+          y1={y}
+          x2="132"
+          y2={y}
           stroke={idx === 0 ? COLORS.pageLineStrong : COLORS.pageLine}
           strokeWidth={idx === 0 ? 0.8 : 0.6}
         />
       ))}
 
       {/* spine gold bar */}
-      <Rect x="72" y="55" width="16" height="30" rx="1" fill={COLORS.gold} opacity={0.8} />
-      <Line x1="80" y1="50" x2="80" y2="125" stroke={COLORS.gold} strokeWidth="2" />
+      <Rect
+        x="72"
+        y="55"
+        width="16"
+        height="30"
+        rx="1"
+        fill={COLORS.gold}
+        opacity={0.8}
+      />
+      <Line
+        x1="80"
+        y1="50"
+        x2="80"
+        y2="125"
+        stroke={COLORS.gold}
+        strokeWidth="2"
+      />
 
       {/* cross above book */}
       <G transform="translate(80,10)">
         {/* vertical beam */}
-        <Line x1="0" y1="-30" x2="0" y2="-6" stroke={COLORS.gold} strokeWidth="2" />
+        <Line
+          x1="0"
+          y1="-30"
+          x2="0"
+          y2="-6"
+          stroke={COLORS.gold}
+          strokeWidth="2"
+        />
         {/* horizontal beam */}
-        <Line x1="-12" y1="-22" x2="12" y2="-22" stroke={COLORS.gold} strokeWidth="2" />
+        <Line
+          x1="-12"
+          y1="-22"
+          x2="12"
+          y2="-22"
+          stroke={COLORS.gold}
+          strokeWidth="2"
+        />
         {/* arrowhead / pointer */}
         <Polygon points="0,-6 4,-14 -4,-14" fill={COLORS.gold} opacity={0.9} />
         {/* base glow dot */}
@@ -242,7 +278,7 @@ export default function BibleSplashScreen() {
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
 
     // raios rotativos
@@ -252,22 +288,35 @@ export default function BibleSplashScreen() {
         duration: 20000,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     ).start();
   }, []);
 
   // interpolações
-  const bookScale = bookAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
-  const bookTranslateY = bookAnim.interpolate({ inputRange: [0, 1], outputRange: [40, 0] });
-  const textTranslateY = textAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
-  const raysRotate = raysAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  const glowScale = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.15] });
+  const bookScale = bookAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.4, 1],
+  });
+  const bookTranslateY = bookAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [40, 0],
+  });
+  const textTranslateY = textAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [20, 0],
+  });
+  const raysRotate = raysAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+  const glowScale = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.15],
+  });
 
   // raios (linhas em SVG giratório)
   const NUM_RAYS = 24;
   const RAY_LENGTH = Math.max(width, height) * 0.9;
-  const cx = width / 2;
-  const cy = height / 2;
 
   return (
     <View style={styles.container}>
@@ -278,17 +327,14 @@ export default function BibleSplashScreen() {
 
       {/* Raios giratórios */}
       <Animated.View
-        style={[
-          styles.raysWrapper,
-          { transform: [{ rotate: raysRotate }] },
-        ]}
+        style={[styles.raysWrapper, { transform: [{ rotate: raysRotate }] }]}
         pointerEvents="none"
       >
         <Svg
           width={width * 2}
           height={height * 2}
           viewBox={`0 0 ${width * 2} ${height * 2}`}
-          style={{ position: 'absolute', top: -height / 2, left: -width / 2 }}
+          style={{ position: "absolute", top: -height / 2, left: -width / 2 }}
         >
           {Array.from({ length: NUM_RAYS }, (_, i) => {
             const angle = ((360 / NUM_RAYS) * i * Math.PI) / 180;
@@ -326,10 +372,7 @@ export default function BibleSplashScreen() {
       <Animated.View
         style={{
           opacity: bookAnim,
-          transform: [
-            { scale: bookScale },
-            { translateY: bookTranslateY },
-          ],
+          transform: [{ scale: bookScale }, { translateY: bookTranslateY }],
         }}
       >
         <BookSVG />
@@ -378,10 +421,7 @@ function CornerOrnament({
         styles.corner,
         style,
         {
-          transform: [
-            { scaleX: flipX ? -1 : 1 },
-            { scaleY: flipY ? -1 : 1 },
-          ],
+          transform: [{ scaleX: flipX ? -1 : 1 }, { scaleY: flipY ? -1 : 1 }],
         },
       ]}
       pointerEvents="none"
@@ -422,13 +462,16 @@ function LoadingDot({ delay }: { delay: number }) {
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     loop.start();
     return () => loop.stop();
   }, []);
 
-  const scale = anim.interpolate({ inputRange: [0.3, 1], outputRange: [0.8, 1.2] });
+  const scale = anim.interpolate({
+    inputRange: [0.3, 1],
+    outputRange: [0.8, 1.2],
+  });
 
   return (
     <Animated.View
@@ -452,16 +495,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   raysWrapper: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   glowRing: {
-    position: 'absolute',
+    position: "absolute",
     width: 220,
     height: 220,
     borderRadius: 110,
@@ -470,26 +513,26 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.goldGhost,
   },
   textArea: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 28,
   },
   appName: {
-    fontFamily: 'serif', // Substitua por uma fonte carregada via expo-font
+    fontFamily: "serif", // Substitua por uma fonte carregada via expo-font
     fontSize: 36,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.gold,
     letterSpacing: 4,
-    textTransform: 'uppercase',
-    textAlign: 'center',
+    textTransform: "uppercase",
+    textAlign: "center",
   },
   appSubtitle: {
-    fontFamily: 'serif',
+    fontFamily: "serif",
     fontSize: 13,
     color: COLORS.goldDim,
     letterSpacing: 3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     marginTop: 6,
-    textAlign: 'center',
+    textAlign: "center",
   },
   divider: {
     width: 1,
@@ -498,12 +541,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   dotsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 60,
   },
   corner: {
-    position: 'absolute',
+    position: "absolute",
     width: 40,
     height: 40,
     opacity: 0.35,
