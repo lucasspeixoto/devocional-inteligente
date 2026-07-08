@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Keyboard,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { useDatabase } from "@/contexts/DatabaseContext";
@@ -79,8 +80,23 @@ export default function ReadingScreen() {
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [noteIdToDelete, setNoteIdToDelete] = useState<number | null>(null);
 
+  // Error modal state
+  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
+
   // Reference for ScrollView reset
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Manual Keyboard padding for Android to fix stuck margin bug
+  const [kbHeight, setKbHeight] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => setKbHeight(e.endCoordinates.height));
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => setKbHeight(0));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Swipe animation values
   const translationX = useSharedValue(0);
@@ -246,7 +262,7 @@ export default function ReadingScreen() {
 
   const handleAddNote = async () => {
     if (!newNoteContent.trim()) {
-      Alert.alert("Erro", "O texto da anotação é obrigatório.");
+      setErrorModalMessage("O texto da anotação é obrigatório.");
       return;
     }
     try {
@@ -255,7 +271,7 @@ export default function ReadingScreen() {
       await loadNotesCount();
     } catch (e) {
       console.error(e);
-      Alert.alert("Erro", "Erro ao salvar anotação.");
+      setErrorModalMessage("Erro ao salvar anotação.");
     }
   };
 
@@ -404,19 +420,23 @@ export default function ReadingScreen() {
           animationType="slide"
           transparent={true}
           statusBarTranslucent={true}
+          navigationBarTranslucent={true}
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.modalOverlay}
-          >
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              style={{ flex: 1 }}
+              enabled={Platform.OS === "ios"}
+            >
             <View
               style={[
                 styles.modalContent,
                 {
                   backgroundColor: colors.surface,
-                  paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
+                  paddingTop: insets.top > 0 ? insets.top + 16 : 24,
+                  paddingBottom: (insets.bottom > 0 ? insets.bottom + 16 : 24) + (Platform.OS === "android" ? kbHeight : 0),
                 },
               ]}
             >
@@ -542,7 +562,8 @@ export default function ReadingScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </View>
         </Modal>
 
         {/* Delete Confirmation Modal */}
@@ -628,6 +649,74 @@ export default function ReadingScreen() {
             </Card>
           </View>
         </Modal>
+
+        {/* Error Message Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          statusBarTranslucent={true}
+          visible={errorModalMessage !== null}
+          onRequestClose={() => setErrorModalMessage(null)}
+        >
+          <View style={styles.confirmOverlay}>
+            <Card
+              style={[
+                styles.confirmContent,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <Ionicons
+                name="alert-circle-outline"
+                size={44}
+                color={colors.error}
+                style={{ marginBottom: 16 }}
+              />
+              <Text
+                style={[
+                  typography.heading2,
+                  {
+                    color: colors.textPrimary,
+                    fontWeight: "bold",
+                    marginBottom: 8,
+                    textAlign: "center",
+                  },
+                ]}
+              >
+                Atenção
+              </Text>
+              <Text
+                style={[
+                  typography.body,
+                  {
+                    color: colors.textSecondary,
+                    marginBottom: 24,
+                    textAlign: "center",
+                  },
+                ]}
+              >
+                {errorModalMessage}
+              </Text>
+              <View style={styles.confirmButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => setErrorModalMessage(null)}
+                >
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: "#FFFFFF", fontWeight: "bold" },
+                    ]}
+                  >
+                    OK
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
+          </View>
+        </Modal>
       </View>
     </GestureHandlerRootView>
   );
@@ -688,10 +777,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#00000050",
   },
   modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: "60%",
-    padding: 20,
+    height: "100%",
+    paddingHorizontal: 20,
   },
   modalHeader: {
     flexDirection: "row",
@@ -721,23 +808,22 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     borderTopWidth: 1,
-    paddingTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
+    paddingTop: 16,
+    flexDirection: "column",
+    alignItems: "stretch",
     gap: 12,
   },
   noteInput: {
-    flex: 1,
-    minHeight: 46,
-    maxHeight: 100,
+    minHeight: 120,
+    maxHeight: 250,
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    textAlignVertical: "top",
   },
   saveButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",

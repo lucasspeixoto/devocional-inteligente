@@ -353,11 +353,7 @@ export default function BibleSplashScreen() {
         </Svg>
       </Animated.View>
 
-      {/* Ornamentos de canto */}
-      <CornerOrnament style={styles.cornerTL} flipX={false} flipY={false} />
-      <CornerOrnament style={styles.cornerTR} flipX={true} flipY={false} />
-      <CornerOrnament style={styles.cornerBL} flipX={false} flipY={true} />
-      <CornerOrnament style={styles.cornerBR} flipX={true} flipY={true} />
+
 
       {/* Glow ring */}
       <Animated.View
@@ -403,42 +399,7 @@ export default function BibleSplashScreen() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Ornamento de canto
-// ---------------------------------------------------------------------------
-function CornerOrnament({
-  style,
-  flipX,
-  flipY,
-}: {
-  style: object;
-  flipX: boolean;
-  flipY: boolean;
-}) {
-  return (
-    <View
-      style={[
-        styles.corner,
-        style,
-        {
-          transform: [{ scaleX: flipX ? -1 : 1 }, { scaleY: flipY ? -1 : 1 }],
-        },
-      ]}
-      pointerEvents="none"
-    >
-      <Svg width={40} height={40} viewBox="0 0 40 40">
-        <Path
-          d="M2 38 L2 8 Q2 2 8 2 L38 2"
-          stroke={COLORS.gold}
-          strokeWidth="1.5"
-          fill="none"
-        />
-        <Circle cx="2" cy="38" r="2" fill={COLORS.gold} />
-        <Circle cx="38" cy="2" r="2" fill={COLORS.gold} />
-      </Svg>
-    </View>
-  );
-}
+
 
 // ---------------------------------------------------------------------------
 // Dot animado
@@ -545,14 +506,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 60,
   },
-  corner: {
-    position: "absolute",
-    width: 40,
-    height: 40,
-    opacity: 0.35,
-  },
-  cornerTL: { top: 32, left: 24 },
-  cornerTR: { top: 32, right: 24 },
-  cornerBL: { bottom: 32, left: 24 },
-  cornerBR: { bottom: 32, right: 24 },
 });
