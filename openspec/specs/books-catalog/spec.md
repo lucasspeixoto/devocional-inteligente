@@ -2,7 +2,7 @@
 
 Listagem e detalhes dos livros da Bíblia com informações da API da Bíblia Digital.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Listagem de livros agrupados
 

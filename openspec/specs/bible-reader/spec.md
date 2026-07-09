@@ -1,9 +1,8 @@
 # bible-reader
 
+## Purpose
 Tela principal de leitura com exibição de versículos, navegação por swipe entre capítulos e retomada do último ponto de leitura.
-
-## ADDED Requirements
-
+## Requirements
 ### Requirement: Exibição de versículos do capítulo atual
 
 O sistema DEVE exibir todos os versículos do capítulo atualmente selecionado na tela principal (Home). Cada versículo DEVE apresentar seu número e texto de forma clara e legível. O componente de leitura DEVE ocupar a área principal da tela, com rolagem vertical quando o conteúdo exceder o espaço visível.
@@ -200,3 +199,14 @@ AND NÃO DEVE manter a posição de rolagem do capítulo anterior
 
 WHEN o app é aberto e a posição de leitura é restaurada do banco de dados
 THEN a lista de versículos DEVE ser exibida a partir do topo (versículo 1 visível)
+
+### Requirement: Nova tab de Anotações no menu inferior
+
+O menu inferior (tabs layout) do aplicativo SHALL exibir uma nova opção de navegação chamada "Anotações", posicionada imediatamente antes da opção "Configurações". Esta tab SHALL direcionar o usuário para a tela do diário de anotações.
+
+#### Scenario: Visualizar a tab de Anotações no menu inferior
+- **WHEN** o usuário está visualizando a barra de abas inferior
+- **THEN** o menu inferior DEVE exibir 4 opções na seguinte ordem: Leitura, Livros, Anotações, Configurações
+- **AND** a tab de Anotações DEVE exibir o ícone `document-text` (ativo) / `document-text-outline` (inativo)
+- **AND** a tab de Anotações DEVE utilizar as cores ativas e inativas de acordo com o tema selecionado
+

@@ -1,4 +1,8 @@
-## ADDED Requirements
+# settings-screen
+
+Tela de configurações.
+
+## Requirements
 
 ### Requirement: Exibição da tela de configurações
 

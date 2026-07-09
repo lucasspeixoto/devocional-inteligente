@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { typography } from "@/constants/typography";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { getBookDetails as fetchBookDetailsFromApi } from "@/services/api";
 import {
   getBookByAbbrev,
   updateBookComment,
 } from "@/services/repositories/booksRepository";
-import { getBookDetails as fetchBookDetailsFromApi } from "@/services/api";
 import { LocalBook } from "@/types";
-import { typography } from "@/constants/typography";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { Card } from "@/components/ui/Card";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -157,22 +157,6 @@ export default function BookDetailsScreen() {
                 {book.testament === "VT"
                   ? "Velho Testamento"
                   : "Novo Testamento"}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.abbrevBadge,
-                { backgroundColor: `${colors.secondary}20` },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.abbrevText,
-                  typography.heading2,
-                  { color: colors.primary, fontWeight: "700" },
-                ]}
-              >
-                {book.abbrev_pt}
               </Text>
             </View>
           </View>
@@ -362,16 +346,7 @@ const styles = StyleSheet.create({
   bookSubtitle: {
     fontSize: 14,
   },
-  abbrevBadge: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  abbrevText: {
-    textTransform: "uppercase",
-  },
+
   metaRow: {
     flexDirection: "row",
     alignItems: "center",

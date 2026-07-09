@@ -4,7 +4,7 @@ Sistema de temas (light/dark) com paleta de cores em tons de marrom (primária) 
 
 ---
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Paleta de cores do tema Light
 

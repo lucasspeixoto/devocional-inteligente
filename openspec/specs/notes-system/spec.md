@@ -2,7 +2,7 @@
 
 Sistema de anotações vinculadas a versículos específicos, permitindo ao usuário criar, editar, visualizar e excluir notas pessoais associadas a passagens bíblicas. As anotações são armazenadas localmente via SQLite para funcionamento offline.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Criar anotação em um versículo
 

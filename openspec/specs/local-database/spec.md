@@ -1,4 +1,8 @@
-## ADDED Requirements
+# local-database
+
+Banco de dados local SQLite.
+
+## Requirements
 
 ### Requirement: Inicialização do Banco de Dados
 

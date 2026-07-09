@@ -2,7 +2,7 @@
 
 Serviço de integração com a API da Bíblia Digital (https://www.abibliadigital.com.br) para consulta de livros, versículos, detalhes de livros e versões disponíveis, com autenticação Bearer token.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Configuração do cliente HTTP com autenticação
 
