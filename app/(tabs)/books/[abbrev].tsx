@@ -1,27 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { typography } from "@/constants/typography";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { getBookDetails as fetchBookDetailsFromApi } from "@/services/api";
 import {
   getBookByAbbrev,
   updateBookComment,
 } from "@/services/repositories/booksRepository";
-import { getBookDetails as fetchBookDetailsFromApi } from "@/services/api";
 import { LocalBook } from "@/types";
-import { typography } from "@/constants/typography";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { Card } from "@/components/ui/Card";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -36,7 +37,7 @@ export default function BookDetailsScreen() {
   const [book, setBook] = useState<LocalBook | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [introModalVisible, setIntroModalVisible] = useState(false);
 
   const loadDetails = useCallback(async () => {
     if (!abbrev) return;
@@ -107,215 +108,245 @@ export default function BookDetailsScreen() {
   const chaptersArray = Array.from({ length: book.chapters }, (_, i) => i + 1);
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[
-        styles.content,
-        { paddingBottom: 80 + insets.bottom },
-      ]}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text
-          style={[
-            styles.title,
-            typography.heading2,
-            { color: colors.textPrimary },
-          ]}
-        >
-          Detalhes do Livro
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <Animated.View entering={FadeInUp.duration(400)}>
-        <Card style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <View>
-              <Text
-                style={[
-                  styles.bookName,
-                  typography.heading1,
-                  { color: colors.textPrimary },
-                ]}
-              >
-                {book.name}
-              </Text>
-              <Text
-                style={[
-                  styles.bookSubtitle,
-                  typography.body,
-                  { color: colors.primary, fontWeight: "600" },
-                ]}
-              >
-                {book.group_name} •{" "}
-                {book.testament === "VT"
-                  ? "Velho Testamento"
-                  : "Novo Testamento"}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.abbrevBadge,
-                { backgroundColor: `${colors.secondary}20` },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.abbrevText,
-                  typography.heading2,
-                  { color: colors.primary, fontWeight: "700" },
-                ]}
-              >
-                {book.abbrev_pt}
-              </Text>
-            </View>
-          </View>
-
-          {!!book.author && (
-            <View style={styles.metaRow}>
-              <Ionicons
-                name="person-outline"
-                size={16}
-                color={colors.textSecondary}
-              />
-              <Text
-                style={[
-                  styles.metaText,
-                  typography.bodySmall,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                Autor: {book.author}
-              </Text>
-            </View>
-          )}
-
-          <View style={styles.metaRow}>
-            <Ionicons
-              name="list-outline"
-              size={16}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[
-                styles.metaText,
-                typography.bodySmall,
-                { color: colors.textSecondary },
-              ]}
-            >
-              Capítulos: {book.chapters}
-            </Text>
-          </View>
-        </Card>
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-        <Card style={styles.commentCard}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.fixedContainer}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
           <Text
             style={[
-              styles.sectionTitle,
-              typography.label,
-              { color: colors.primary, fontWeight: "700", marginBottom: 8 },
+              styles.title,
+              typography.heading2,
+              { color: colors.textPrimary },
             ]}
           >
-            Introdução / Comentário
+            Detalhes do Livro
           </Text>
-          {book.comment ? (
-            <View>
-              <Text
-                style={[
-                  styles.commentText,
-                  typography.body,
-                  { color: colors.textPrimary },
-                ]}
-                numberOfLines={isExpanded ? undefined : 3}
-              >
-                {book.comment}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setIsExpanded(!isExpanded)}
-                style={styles.expandButton}
-                activeOpacity={0.7}
-              >
+          <View style={{ width: 24 }} />
+        </View>
+
+        <Animated.View entering={FadeInUp.duration(400)}>
+          <Card style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <View>
                 <Text
                   style={[
-                    styles.expandButtonText,
-                    typography.label,
-                    { color: colors.secondary },
+                    styles.bookName,
+                    typography.heading1,
+                    { color: colors.textPrimary },
                   ]}
                 >
-                  {isExpanded ? "Mostrar menos" : "Ler introdução..."}
+                  {book.name}
                 </Text>
-                <Ionicons
-                  name={isExpanded ? "chevron-up" : "chevron-down"}
-                  size={16}
-                  color={colors.secondary}
-                />
-              </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.bookSubtitle,
+                    typography.body,
+                    { color: colors.primary, fontWeight: "600" },
+                  ]}
+                >
+                  {book.group_name} •{" "}
+                  {book.testament === "VT"
+                    ? "Velho Testamento"
+                    : "Novo Testamento"}
+                </Text>
+              </View>
             </View>
-          ) : (
-            <Text
-              style={[
-                styles.commentText,
-                typography.body,
-                { color: colors.textSecondary, fontStyle: "italic" },
-              ]}
-            >
-              Nenhuma informação adicional disponível para este livro.
-            </Text>
-          )}
-        </Card>
-      </Animated.View>
 
-      <Animated.View
-        entering={FadeIn.duration(500).delay(200)}
-        style={styles.chaptersSection}
-      >
+            <View style={styles.cardFooterRow}>
+              <View style={{ flex: 1 }}>
+                {!!book.author && (
+                  <View style={styles.metaRow}>
+                    <Ionicons
+                      name="person-outline"
+                      size={16}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={[
+                        styles.metaText,
+                        typography.bodySmall,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Autor: {book.author}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.metaRow}>
+                  <Ionicons
+                    name="list-outline"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.metaText,
+                      typography.bodySmall,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Capítulos: {book.chapters}
+                  </Text>
+                </View>
+              </View>
+
+              {!!book.comment && (
+                <TouchableOpacity
+                  style={[
+                    styles.introButton,
+                    { borderColor: colors.secondary, borderWidth: 1 },
+                  ]}
+                  onPress={() => setIntroModalVisible(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="book-outline"
+                    size={16}
+                    color={colors.secondary}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      typography.label,
+                      { color: colors.secondary, fontWeight: "bold" },
+                    ]}
+                  >
+                    Introdução
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </Card>
+        </Animated.View>
+
         <Text
           style={[
             styles.sectionTitle,
             typography.label,
-            { color: colors.primary, fontWeight: "700", marginBottom: 12 },
+            {
+              color: colors.primary,
+              fontWeight: "700",
+              marginTop: 16,
+              marginBottom: 8,
+            },
           ]}
         >
           Selecione o Capítulo
         </Text>
-        <View style={styles.grid}>
-          {chaptersArray.map((num) => (
-            <TouchableOpacity
-              key={num}
-              style={[
-                styles.gridItem,
-                {
-                  width: COLUMN_WIDTH,
-                  height: COLUMN_WIDTH,
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-              onPress={() => handleChapterPress(num)}
-              activeOpacity={0.7}
+      </View>
+
+      <ScrollView
+        style={styles.chaptersScroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 40 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View
+          entering={FadeIn.duration(500).delay(200)}
+          style={styles.chaptersSection}
+        >
+          <View style={styles.grid}>
+            {chaptersArray.map((num) => (
+              <TouchableOpacity
+                key={num}
+                style={[
+                  styles.gridItem,
+                  {
+                    width: COLUMN_WIDTH,
+                    height: COLUMN_WIDTH,
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+                onPress={() => handleChapterPress(num)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.gridItemText,
+                    typography.label,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {num}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
+      </ScrollView>
+
+      {/* Introduction Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        statusBarTranslucent={true}
+        navigationBarTranslucent={true}
+        visible={introModalVisible}
+        onRequestClose={() => setIntroModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: colors.surface,
+                paddingTop: insets.top > 0 ? insets.top + 16 : 24,
+                paddingBottom: insets.bottom > 0 ? insets.bottom + 16 : 24,
+              },
+            ]}
+          >
+            {/* Modal Header */}
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
             >
               <Text
                 style={[
-                  styles.gridItemText,
-                  typography.label,
-                  { color: colors.textPrimary },
+                  typography.heading2,
+                  { color: colors.textPrimary, fontWeight: "bold", flex: 1 },
+                ]}
+                numberOfLines={1}
+              >
+                Introdução: {book.name}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIntroModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Scrollable commentary */}
+            <ScrollView
+              style={styles.introScroll}
+              showsVerticalScrollIndicator={false}
+            >
+              <Text
+                style={[
+                  typography.body,
+                  {
+                    color: colors.textPrimary,
+                    lineHeight: 26,
+                    paddingBottom: 20,
+                  },
                 ]}
               >
-                {num}
+                {book.comment}
               </Text>
-            </TouchableOpacity>
-          ))}
+            </ScrollView>
+          </View>
         </View>
-      </Animated.View>
-    </ScrollView>
+      </Modal>
+    </View>
   );
 }
 
@@ -324,9 +355,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 60,
   },
-  content: {
+  fixedContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 8,
+  },
+  chaptersScroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   centerContainer: {
     flex: 1,
@@ -362,16 +400,7 @@ const styles = StyleSheet.create({
   bookSubtitle: {
     fontSize: 14,
   },
-  abbrevBadge: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  abbrevText: {
-    textTransform: "uppercase",
-  },
+
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -418,5 +447,42 @@ const styles = StyleSheet.create({
   },
   expandButtonText: {
     fontWeight: "bold",
+  },
+  cardFooterRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 12,
+  },
+  introButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "#00000050",
+  },
+  modalContent: {
+    height: "100%",
+    paddingHorizontal: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  introScroll: {
+    flex: 1,
+    marginTop: 8,
   },
 });

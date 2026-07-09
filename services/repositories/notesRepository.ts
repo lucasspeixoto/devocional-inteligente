@@ -1,5 +1,5 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { LocalNote } from "@/types";
+import { LocalNote, NoteWithBookAndVerseText } from "@/types";
 
 export interface NoteWithBookName extends LocalNote {
   book_name: string;
@@ -118,4 +118,34 @@ export async function getNotesCountByChapter(
     counts[row.verse_number] = row.count;
   }
   return counts;
+}
+
+export async function getNotesOrderedByBible(
+  db: SQLiteDatabase,
+  version: string,
+): Promise<NoteWithBookAndVerseText[]> {
+  const rows = await db.getAllAsync<NoteWithBookAndVerseText>(
+    `SELECT n.id, n.book_abbrev, n.chapter, n.verse_number, n.content, n.created_at, n.updated_at, 
+            b.name as book_name, v.text as verse_text
+     FROM notes n
+     JOIN books b ON n.book_abbrev = b.abbrev
+     LEFT JOIN verses v ON n.book_abbrev = v.book_abbrev 
+                       AND n.chapter = v.chapter 
+                       AND n.verse_number = v.verse_number 
+                       AND v.version = ?
+     ORDER BY b.rowid ASC, n.chapter ASC, n.verse_number ASC, n.created_at DESC`,
+    [version.toLowerCase()],
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    book_abbrev: row.book_abbrev,
+    chapter: row.chapter,
+    verse_number: row.verse_number,
+    content: row.content,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    book_name: row.book_name,
+    verse_text: row.verse_text,
+  }));
 }

@@ -353,8 +353,6 @@ export default function BibleSplashScreen() {
         </Svg>
       </Animated.View>
 
-
-
       {/* Glow ring */}
       <Animated.View
         style={[
@@ -398,8 +396,6 @@ export default function BibleSplashScreen() {
     </View>
   );
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Dot animado
