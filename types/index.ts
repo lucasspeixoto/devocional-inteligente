@@ -98,3 +98,8 @@ export interface ThemeColors {
   tabBarActive: string;
   tabBarInactive: string;
 }
+
+export interface NoteWithBookAndVerseText extends LocalNote {
+  book_name: string;
+  verse_text?: string | null;
+}

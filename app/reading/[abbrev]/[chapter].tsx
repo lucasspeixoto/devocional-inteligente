@@ -9,7 +9,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Keyboard,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
@@ -81,7 +80,9 @@ export default function ReadingScreen() {
   const [noteIdToDelete, setNoteIdToDelete] = useState<number | null>(null);
 
   // Error modal state
-  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
+  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(
+    null,
+  );
 
   // Reference for ScrollView reset
   const scrollViewRef = useRef<ScrollView>(null);
@@ -90,13 +91,36 @@ export default function ReadingScreen() {
   const [kbHeight, setKbHeight] = useState(0);
   useEffect(() => {
     if (Platform.OS !== "android") return;
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => setKbHeight(e.endCoordinates.height));
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => setKbHeight(0));
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) =>
+      setKbHeight(e.endCoordinates.height),
+    );
+    const hideSub = Keyboard.addListener("keyboardDidHide", () =>
+      setKbHeight(0),
+    );
     return () => {
       showSub.remove();
       hideSub.remove();
     };
   }, []);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const isoStr = dateStr.includes("Z")
+        ? dateStr
+        : dateStr.replace(" ", "T") + "Z";
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
 
   // Swipe animation values
   const translationX = useSharedValue(0);
@@ -430,138 +454,138 @@ export default function ReadingScreen() {
               style={{ flex: 1 }}
               enabled={Platform.OS === "ios"}
             >
-            <View
-              style={[
-                styles.modalContent,
-                {
-                  backgroundColor: colors.surface,
-                  paddingTop: insets.top > 0 ? insets.top + 16 : 24,
-                  paddingBottom: (insets.bottom > 0 ? insets.bottom + 16 : 24) + (Platform.OS === "android" ? kbHeight : 0),
-                },
-              ]}
-            >
-              {/* Modal Header */}
               <View
                 style={[
-                  styles.modalHeader,
-                  { borderBottomColor: colors.border },
+                  styles.modalContent,
+                  {
+                    backgroundColor: colors.surface,
+                    paddingTop: insets.top > 0 ? insets.top + 16 : 24,
+                    paddingBottom:
+                      (insets.bottom > 0 ? insets.bottom + 16 : 24) +
+                      (Platform.OS === "android" ? kbHeight : 0),
+                  },
                 ]}
               >
-                <Text
+                {/* Modal Header */}
+                <View
                   style={[
-                    typography.heading2,
-                    { color: colors.textPrimary, fontWeight: "bold" },
+                    styles.modalHeader,
+                    { borderBottomColor: colors.border },
                   ]}
                 >
-                  Anotações: {currentBookName} {currentChapterNum}:
-                  {selectedVerseNum}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setModalVisible(false)}
-                  style={styles.modalCloseButton}
-                >
-                  <Ionicons
-                    name="close"
-                    size={24}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
+                  <Text
+                    style={[
+                      typography.heading2,
+                      { color: colors.textPrimary, fontWeight: "bold" },
+                    ]}
+                  >
+                    Anotações: {currentBookName} {currentChapterNum}:
+                    {selectedVerseNum}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={styles.modalCloseButton}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={24}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              {/* Notes List */}
-              <ScrollView style={styles.notesList}>
-                {verseNotes.length > 0 ? (
-                  verseNotes.map((note) => (
-                    <Card key={note.id} style={styles.noteCard}>
-                      <Text
-                        style={[
-                          typography.body,
-                          { color: colors.textPrimary, marginBottom: 8 },
-                        ]}
-                      >
-                        {note.content}
-                      </Text>
-                      <View style={styles.noteMetaRow}>
+                {/* Notes List */}
+                <ScrollView style={styles.notesList}>
+                  {verseNotes.length > 0 ? (
+                    verseNotes.map((note) => (
+                      <Card key={note.id} style={styles.noteCard}>
                         <Text
                           style={[
-                            typography.bodySmall,
-                            { color: colors.textSecondary, fontSize: 11 },
+                            typography.body,
+                            { color: colors.textPrimary, marginBottom: 8 },
                           ]}
                         >
-                          {new Date(note.updated_at).toLocaleDateString(
-                            "pt-BR",
-                          )}
+                          {note.content}
                         </Text>
-                        <TouchableOpacity
-                          onPress={() => handleDeleteNote(note.id)}
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={18}
-                            color={colors.error}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </Card>
-                  ))
-                ) : (
-                  <Text
+                        <View style={styles.noteMetaRow}>
+                          <Text
+                            style={[
+                              typography.bodySmall,
+                              { color: colors.textSecondary, fontSize: 11 },
+                            ]}
+                          >
+                            {formatDate(note.updated_at)}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => handleDeleteNote(note.id)}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={18}
+                              color={colors.error}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </Card>
+                    ))
+                  ) : (
+                    <Text
+                      style={[
+                        typography.body,
+                        {
+                          color: colors.textSecondary,
+                          fontStyle: "italic",
+                          textAlign: "center",
+                          marginTop: 24,
+                        },
+                      ]}
+                    >
+                      Nenhuma anotação para este versículo.
+                    </Text>
+                  )}
+                </ScrollView>
+
+                {/* Form Input */}
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { borderTopColor: colors.border },
+                  ]}
+                >
+                  <TextInput
+                    placeholder="Escreva sua reflexão..."
+                    placeholderTextColor={colors.textSecondary}
+                    value={newNoteContent}
+                    onChangeText={setNewNoteContent}
+                    multiline
                     style={[
+                      styles.noteInput,
                       typography.body,
                       {
-                        color: colors.textSecondary,
-                        fontStyle: "italic",
-                        textAlign: "center",
-                        marginTop: 24,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
                       },
                     ]}
-                  >
-                    Nenhuma anotação para este versículo.
-                  </Text>
-                )}
-              </ScrollView>
-
-              {/* Form Input */}
-              <View
-                style={[
-                  styles.inputContainer,
-                  { borderTopColor: colors.border },
-                ]}
-              >
-                <TextInput
-                  placeholder="Escreva sua reflexão..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={newNoteContent}
-                  onChangeText={setNewNoteContent}
-                  multiline
-                  style={[
-                    styles.noteInput,
-                    typography.body,
-                    {
-                      color: colors.textPrimary,
-                      backgroundColor: colors.background,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                />
-                <TouchableOpacity
-                  style={[
-                    styles.saveButton,
-                    { backgroundColor: colors.primary },
-                  ]}
-                  onPress={handleAddNote}
-                >
-                  <Text
+                  />
+                  <TouchableOpacity
                     style={[
-                      typography.label,
-                      { color: "#FFFFFF", fontWeight: "bold" },
+                      styles.saveButton,
+                      { backgroundColor: colors.primary },
                     ]}
+                    onPress={handleAddNote}
                   >
-                    Salvar
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={[
+                        typography.label,
+                        { color: "#FFFFFF", fontWeight: "bold" },
+                      ]}
+                    >
+                      Salvar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
             </KeyboardAvoidingView>
           </View>
         </Modal>
