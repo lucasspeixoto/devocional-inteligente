@@ -1,5 +1,6 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import { LocalNote, NoteWithBookAndVerseText } from "@/types";
+import { BIBLE_VERSION } from "@/types";
 
 export interface NoteWithBookName extends LocalNote {
   book_name: string;
@@ -80,11 +81,13 @@ export async function getNotesByVerse(
 export async function getAllNotes(
   db: SQLiteDatabase,
 ): Promise<NoteWithBookName[]> {
-  const rows = await db.getAllAsync<LocalNote>(
+  const rows = await db.getAllAsync<NoteWithBookName>(
     `SELECT n.id, n.book_abbrev, n.chapter, n.verse_number, n.content, n.created_at, n.updated_at, b.name as book_name
      FROM notes n
      JOIN books b ON n.book_abbrev = b.abbrev
+     WHERE n.version = ?
      ORDER BY n.updated_at DESC`,
+    [BIBLE_VERSION],
   );
 
   return rows.map((row) => ({
@@ -122,7 +125,6 @@ export async function getNotesCountByChapter(
 
 export async function getNotesOrderedByBible(
   db: SQLiteDatabase,
-  version: string,
 ): Promise<NoteWithBookAndVerseText[]> {
   const rows = await db.getAllAsync<NoteWithBookAndVerseText>(
     `SELECT n.id, n.book_abbrev, n.chapter, n.verse_number, n.content, n.created_at, n.updated_at, 
@@ -133,8 +135,9 @@ export async function getNotesOrderedByBible(
                        AND n.chapter = v.chapter 
                        AND n.verse_number = v.verse_number 
                        AND v.version = ?
+     WHERE n.version = ?
      ORDER BY b.rowid ASC, n.chapter ASC, n.verse_number ASC, n.created_at DESC`,
-    [version.toLowerCase()],
+    [BIBLE_VERSION, BIBLE_VERSION],
   );
 
   return rows.map((row) => ({

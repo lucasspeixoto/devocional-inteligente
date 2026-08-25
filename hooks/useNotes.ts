@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { LocalNote } from "@/types";
+import { BIBLE_VERSION } from "@/types";
 import {
   createNote,
   updateNote,
@@ -14,7 +15,6 @@ export function useNotes(
   bookAbbrev?: string | null,
   chapter?: number | null,
   verseNumber?: number | null,
-  version?: string | null,
 ) {
   const db = useDatabase();
   const [notes, setNotes] = useState<LocalNote[]>([]);
@@ -26,13 +26,13 @@ export function useNotes(
     setLoading(true);
     setError(null);
     try {
-      if (bookAbbrev && chapter && verseNumber && version) {
+      if (bookAbbrev && chapter && verseNumber) {
         const verseNotes = await getNotesByVerse(
           db,
           bookAbbrev,
           chapter,
           verseNumber,
-          version,
+          BIBLE_VERSION,
         );
         setNotes(verseNotes);
       } else {
@@ -45,7 +45,7 @@ export function useNotes(
     } finally {
       setLoading(false);
     }
-  }, [db, bookAbbrev, chapter, verseNumber, version]);
+  }, [db, bookAbbrev, chapter, verseNumber]);
 
   useEffect(() => {
     loadNotes();
@@ -53,13 +53,20 @@ export function useNotes(
 
   const addNote = useCallback(
     async (content: string) => {
-      if (!bookAbbrev || !chapter || !verseNumber || !version) {
+      if (!bookAbbrev || !chapter || !verseNumber) {
         throw new Error("Informações do versículo ausentes para criar nota");
       }
-      await createNote(db, bookAbbrev, chapter, verseNumber, version, content);
+      await createNote(
+        db,
+        bookAbbrev,
+        chapter,
+        verseNumber,
+        BIBLE_VERSION,
+        content,
+      );
       await loadNotes();
     },
-    [db, bookAbbrev, chapter, verseNumber, version, loadNotes],
+    [db, bookAbbrev, chapter, verseNumber, loadNotes],
   );
 
   const editNote = useCallback(
