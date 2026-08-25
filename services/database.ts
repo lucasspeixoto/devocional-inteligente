@@ -1,4 +1,10 @@
 import * as SQLite from "expo-sqlite";
+import {
+  BIBLE_DATA_REVISION,
+  BIBLE_VERSION,
+  getBibleBooks,
+  getBibleData,
+} from "@/services/bibleData";
 
 let databaseInstance: SQLite.SQLiteDatabase | null = null;
 
@@ -62,6 +68,11 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
       last_chapter INTEGER,
       last_verse INTEGER
     );
+
+    CREATE TABLE IF NOT EXISTS app_metadata (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 
   // Initialize default preferences if empty
@@ -75,5 +86,119 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
     );
   }
 
+  await db.runAsync(
+    "UPDATE user_preferences SET selected_version = ? WHERE id = 1 AND selected_version <> ?",
+    [BIBLE_VERSION, BIBLE_VERSION],
+  );
+
+  await prepareOfflineBible(db);
+
   return db;
+}
+
+async function prepareOfflineBible(db: SQLite.SQLiteDatabase): Promise<void> {
+  const current = await db.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_metadata WHERE key = 'bible_data_revision'",
+  );
+  if (current?.value === BIBLE_DATA_REVISION) return;
+
+  const data = getBibleData();
+  const books = getBibleBooks();
+  await db.withTransactionAsync(async () => {
+    const legacyBooks = await db.getAllAsync<{
+      abbrev: string;
+      comment: string | null;
+    }>("SELECT abbrev, comment FROM books");
+
+    for (const book of books) {
+      await db.runAsync(
+        `INSERT INTO books (abbrev, name, author, group_name, chapters, testament, version)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(abbrev) DO UPDATE SET
+           name = excluded.name,
+           author = excluded.author,
+           group_name = excluded.group_name,
+           chapters = excluded.chapters,
+           testament = excluded.testament,
+           version = excluded.version`,
+        [
+          book.abbrev,
+          book.name,
+          book.author,
+          book.group,
+          book.chapters,
+          book.testament,
+          BIBLE_VERSION,
+        ],
+      );
+    }
+
+    const canonicalByKey = new Map(
+      books.map((book) => [normalizeAbbrev(book.abbrev), book.abbrev]),
+    );
+    for (const legacyBook of legacyBooks) {
+      const canonical = canonicalByKey.get(normalizeAbbrev(legacyBook.abbrev));
+      if (!canonical || canonical === legacyBook.abbrev) continue;
+
+      if (legacyBook.comment) {
+        await db.runAsync(
+          "UPDATE books SET comment = COALESCE(comment, ?) WHERE abbrev = ?",
+          [legacyBook.comment, canonical],
+        );
+      }
+      await db.runAsync(
+        "UPDATE notes SET book_abbrev = ? WHERE book_abbrev = ?",
+        [canonical, legacyBook.abbrev],
+      );
+      await db.runAsync(
+        "UPDATE user_preferences SET last_book_abbrev = ? WHERE last_book_abbrev = ?",
+        [canonical, legacyBook.abbrev],
+      );
+      await db.runAsync("DELETE FROM verses WHERE book_abbrev = ?", [
+        legacyBook.abbrev,
+      ]);
+      await db.runAsync("DELETE FROM books WHERE abbrev = ?", [
+        legacyBook.abbrev,
+      ]);
+    }
+
+    await db.runAsync("DELETE FROM verses WHERE version = ?", [BIBLE_VERSION]);
+    const rows: Array<[string, number, number, string, string]> = [];
+    data.forEach((book) => {
+      book.chapters.forEach((chapter, chapterIndex) => {
+        chapter.forEach((text, verseIndex) => {
+          rows.push([
+            book.abbrev,
+            chapterIndex + 1,
+            verseIndex + 1,
+            text,
+            BIBLE_VERSION,
+          ]);
+        });
+      });
+    });
+
+    const batchSize = 100;
+    for (let offset = 0; offset < rows.length; offset += batchSize) {
+      const batch = rows.slice(offset, offset + batchSize);
+      const placeholders = batch.map(() => "(?, ?, ?, ?, ?)").join(", ");
+      await db.runAsync(
+        `INSERT INTO verses (book_abbrev, chapter, verse_number, text, version) VALUES ${placeholders}`,
+        batch.flat(),
+      );
+    }
+
+    await db.runAsync(
+      `INSERT INTO app_metadata (key, value) VALUES ('bible_data_revision', ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [BIBLE_DATA_REVISION],
+    );
+  });
+}
+
+function normalizeAbbrev(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
 }

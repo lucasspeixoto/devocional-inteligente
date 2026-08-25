@@ -4,11 +4,7 @@ import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { typography } from "@/constants/typography";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { getBookDetails as fetchBookDetailsFromApi } from "@/services/api";
-import {
-  getBookByAbbrev,
-  updateBookComment,
-} from "@/services/repositories/booksRepository";
+import { getBookByAbbrev } from "@/services/repositories/booksRepository";
 import { LocalBook } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -45,20 +41,6 @@ export default function BookDetailsScreen() {
     setError(null);
     try {
       let localBook = await getBookByAbbrev(db, abbrev);
-
-      if (localBook && !localBook.comment) {
-        // Fetch details from API to get the comment field
-        try {
-          const apiDetails = await fetchBookDetailsFromApi(abbrev);
-          if (apiDetails.comment) {
-            await updateBookComment(db, abbrev, apiDetails.comment);
-            localBook = await getBookByAbbrev(db, abbrev);
-          }
-        } catch (apiErr) {
-          console.warn("API error fetching book details (comment):", apiErr);
-          // Non-blocking: continue displaying basic info if API fails
-        }
-      }
 
       if (localBook) {
         setBook(localBook);

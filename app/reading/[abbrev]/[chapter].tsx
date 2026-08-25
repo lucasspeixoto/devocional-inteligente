@@ -17,10 +17,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useBooks } from "@/hooks/useBooks";
 import { useChapter } from "@/hooks/useChapter";
 import { useNotes } from "@/hooks/useNotes";
-import {
-  setLastReadPosition,
-  getSelectedVersion,
-} from "@/services/repositories/preferencesRepository";
+import { setLastReadPosition } from "@/services/repositories/preferencesRepository";
 import { getBookByAbbrev } from "@/services/repositories/booksRepository";
 import { getNotesCountByChapter } from "@/services/repositories/notesRepository";
 import { typography } from "@/constants/typography";
@@ -42,6 +39,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BIBLE_VERSION, BIBLE_VERSION_LABEL } from "@/types";
 
 export default function ReadingScreen() {
   const { abbrev, chapter } = useLocalSearchParams<{
@@ -57,7 +55,6 @@ export default function ReadingScreen() {
   // Load books list to handle next/prev book logic
   const { books } = useBooks();
 
-  const [selectedVersion, setSelectedVersion] = useState("nvi");
   const [currentBookName, setCurrentBookName] = useState("");
   const [maxChapters, setMaxChapters] = useState(50);
 
@@ -65,7 +62,6 @@ export default function ReadingScreen() {
   const { verses, loading, error, reload } = useChapter(
     abbrev,
     currentChapterNum,
-    selectedVersion,
   );
 
   // Notes count map (verse_number -> notes count)
@@ -130,9 +126,6 @@ export default function ReadingScreen() {
   useEffect(() => {
     async function loadPrefs() {
       try {
-        const ver = await getSelectedVersion(db);
-        setSelectedVersion(ver);
-
         // Load book details
         const b = await getBookByAbbrev(db, abbrev);
         if (b) {
@@ -156,13 +149,13 @@ export default function ReadingScreen() {
         db,
         abbrev,
         currentChapterNum,
-        selectedVersion,
+        BIBLE_VERSION,
       );
       setNotesCount(counts);
     } catch (e) {
       console.error("Error loading notes counts:", e);
     }
-  }, [db, abbrev, currentChapterNum, selectedVersion]);
+  }, [db, abbrev, currentChapterNum]);
 
   useEffect(() => {
     loadNotesCount();
@@ -177,7 +170,6 @@ export default function ReadingScreen() {
     modalVisible ? abbrev : null,
     modalVisible ? currentChapterNum : null,
     modalVisible ? selectedVerseNum : null,
-    modalVisible ? selectedVersion : null,
   );
 
   // Animate slide-in when chapter changes
@@ -351,7 +343,7 @@ export default function ReadingScreen() {
                 { color: colors.textSecondary },
               ]}
             >
-              Capítulo {currentChapterNum} • {selectedVersion.toUpperCase()}
+              Capítulo {currentChapterNum} • {BIBLE_VERSION_LABEL}
             </Text>
           </View>
 

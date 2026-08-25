@@ -15,7 +15,6 @@ import { useFocusEffect, router } from "expo-router";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDatabase } from "@/contexts/DatabaseContext";
-import { useSettings } from "@/hooks/useSettings";
 import {
   getNotesOrderedByBible,
   updateNote,
@@ -46,7 +45,6 @@ export default function NotesScreen() {
   const db = useDatabase();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { version } = useSettings();
 
   const [notes, setNotes] = useState<NoteWithBookAndVerseText[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,14 +77,14 @@ export default function NotesScreen() {
   const loadNotes = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getNotesOrderedByBible(db, version);
+      const data = await getNotesOrderedByBible(db);
       setNotes(data);
     } catch (e) {
       console.error("Error loading notes journal:", e);
     } finally {
       setLoading(false);
     }
-  }, [db, version]);
+  }, [db]);
 
   useFocusEffect(
     useCallback(() => {

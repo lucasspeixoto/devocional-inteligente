@@ -1,10 +1,14 @@
-export interface BookAbbrev {
-  pt: string;
-  en: string;
+export const BIBLE_VERSION = "nvi" as const;
+export const BIBLE_VERSION_LABEL = "NVI (Nova Versão Internacional)";
+export type BibleVersion = typeof BIBLE_VERSION;
+
+export interface BibleJsonBook {
+  abbrev: string;
+  chapters: string[][];
 }
 
 export interface Book {
-  abbrev: BookAbbrev;
+  abbrev: string;
   author: string;
   chapters: number;
   group: string;
@@ -19,26 +23,6 @@ export interface BookDetails extends Book {
 export interface Verse {
   number: number;
   text: string;
-}
-
-export interface ChapterResponse {
-  book: {
-    abbrev: BookAbbrev;
-    name: string;
-    author: string;
-    group: string;
-    version: string;
-  };
-  chapter: {
-    number: number;
-    verses: number;
-  };
-  verses: Verse[];
-}
-
-export interface BibleVersion {
-  version: string;
-  verses: number;
 }
 
 export interface LocalBook {
@@ -73,7 +57,7 @@ export interface LocalNote {
 
 export interface UserPreferences {
   id: number;
-  selected_version: string;
+  selected_version: BibleVersion;
   theme: "light" | "dark";
   last_book_abbrev: string | null;
   last_chapter: number | null;

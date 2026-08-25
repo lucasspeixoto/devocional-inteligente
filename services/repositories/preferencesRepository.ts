@@ -1,5 +1,5 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { UserPreferences } from "@/types";
+import { BIBLE_VERSION, UserPreferences } from "@/types";
 
 export async function getPreferences(
   db: SQLiteDatabase,
@@ -10,7 +10,7 @@ export async function getPreferences(
   if (!row) {
     return {
       id: 1,
-      selected_version: "nvi",
+      selected_version: BIBLE_VERSION,
       theme: "light",
       last_book_abbrev: null,
       last_chapter: null,
@@ -31,23 +31,6 @@ export async function setLastReadPosition(
      SET last_book_abbrev = ?, last_chapter = ?, last_verse = ? 
      WHERE id = 1`,
     [bookAbbrev, chapter, verse],
-  );
-}
-
-export async function getSelectedVersion(db: SQLiteDatabase): Promise<string> {
-  const row = await db.getFirstAsync<{ selected_version: string }>(
-    "SELECT selected_version FROM user_preferences WHERE id = 1",
-  );
-  return row?.selected_version ?? "nvi";
-}
-
-export async function setSelectedVersion(
-  db: SQLiteDatabase,
-  version: string,
-): Promise<void> {
-  await db.runAsync(
-    "UPDATE user_preferences SET selected_version = ? WHERE id = 1",
-    [version],
   );
 }
 
