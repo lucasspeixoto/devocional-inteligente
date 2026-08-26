@@ -10,6 +10,7 @@ import { getBookByAbbrev } from "@/services/repositories/booksRepository";
 import { getPreferences } from "@/services/repositories/preferencesRepository";
 import { getChapterVerses } from "@/services/repositories/versesRepository";
 import { LocalVerse } from "@/types";
+import { BIBLE_VERSION } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -28,7 +29,6 @@ export default function HomeIndex() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  // Ensure books are synced from API on first launch
   const {
     books,
     loading: booksLoading,
@@ -63,12 +63,7 @@ export default function HomeIndex() {
       }
 
       // Fetch preview verses
-      const verses = await getChapterVerses(
-        db,
-        abbrev,
-        chap,
-        prefs.selected_version || "nvi",
-      );
+      const verses = await getChapterVerses(db, abbrev, chap, BIBLE_VERSION);
       setPreviewVerses(verses.slice(0, 3)); // show first 3 verses as preview
     } catch (e) {
       console.error("Error loading preferences on Home:", e);

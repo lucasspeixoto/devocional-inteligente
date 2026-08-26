@@ -1,43 +1,19 @@
 import { Card } from "@/components/ui/Card";
-import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { typography } from "@/constants/typography";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSettings } from "@/hooks/useSettings";
+import { BIBLE_VERSION_LABEL } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const VERSION_NAMES: Record<string, string> = {
-  acf: "Almeida Corrigida Fiel",
-  apee: "Bíblia básica em Francês",
-  bbe: "Bíblia básica em Inglês",
-  kjv: "Bíblia King James",
-  nvi: "Nova Versão Internacional",
-  ra: "Revista atualizada",
-  rvr: "Reina Vieira",
-};
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
-  const {
-    version: selectedVersion,
-    setVersion,
-    versions,
-    loading,
-    error,
-    refresh,
-  } = useSettings();
+  const { loading } = useSettings();
 
   if (loading) {
     return (
@@ -49,23 +25,13 @@ export default function SettingsScreen() {
     );
   }
 
-  if (error) {
-    return (
-      <View
-        style={[styles.centerContainer, { backgroundColor: colors.background }]}
-      >
-        <ErrorState
-          message="Não foi possível obter as versões da Bíblia."
-          onRetry={refresh}
-        />
-      </View>
-    );
-  }
-
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingBottom: 80 + insets.bottom },
+      ]}
     >
       <View style={styles.header}>
         <Text
@@ -151,77 +117,46 @@ export default function SettingsScreen() {
               { color: colors.textSecondary, marginBottom: 12 },
             ]}
           >
-            Selecione a versão da bíblia para leitura
+            Bíblia disponível offline
           </Text>
 
-          <View style={styles.versionsList}>
-            {versions.map((v) => {
-              const isActive =
-                v.version.toLowerCase() === selectedVersion.toLowerCase();
-              return (
-                <TouchableOpacity
-                  key={v.version}
-                  style={[
-                    styles.versionItem,
-                    {
-                      borderColor: isActive ? colors.secondary : colors.border,
-                      backgroundColor: isActive
-                        ? `${colors.secondary}15`
-                        : colors.surface,
-                    },
-                  ]}
-                  onPress={() => setVersion(v.version)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.versionItemLeft}>
-                    <Text
-                      style={[
-                        styles.versionText,
-                        typography.label,
-                        {
-                          color: isActive ? colors.primary : colors.textPrimary,
-                          fontWeight: isActive ? "700" : "500",
-                        },
-                      ]}
-                    >
-                      {v.version.toUpperCase()} -{" "}
-                      {VERSION_NAMES[v.version.toLowerCase()] || "Desconhecida"}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.versionSub,
-                        typography.bodySmall,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      {v.verses.toLocaleString("pt-BR")} versículos
-                    </Text>
-                  </View>
-                  {isActive && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={22}
-                      color={colors.secondary}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+          <View
+            style={[
+              styles.versionItem,
+              {
+                borderColor: colors.secondary,
+                backgroundColor: `${colors.secondary}15`,
+              },
+            ]}
+          >
+            <View style={styles.versionItemLeft}>
+              <Text
+                style={[
+                  styles.versionText,
+                  typography.label,
+                  { color: colors.primary, fontWeight: "700" },
+                ]}
+              >
+                {BIBLE_VERSION_LABEL}
+              </Text>
+              <Text
+                style={[
+                  styles.versionSub,
+                  typography.bodySmall,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Conteúdo completo incluído no aplicativo
+              </Text>
+            </View>
+            <Ionicons
+              name="checkmark-circle"
+              size={22}
+              color={colors.secondary}
+            />
           </View>
         </Card>
       </Animated.View>
-
-      <View style={styles.footer}>
-        <Text
-          style={[
-            styles.footerText,
-            typography.bodySmall,
-            { color: colors.textSecondary },
-          ]}
-        >
-          Devocional Inteligente v1.0.0
-        </Text>
-      </View>
     </ScrollView>
   );
 }
@@ -231,6 +166,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 60,
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
   centerContainer: {
     flex: 1,
@@ -280,9 +218,6 @@ const styles = StyleSheet.create({
   sectionSub: {
     lineHeight: 18,
   },
-  versionsList: {
-    gap: 8,
-  },
   versionItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -301,14 +236,6 @@ const styles = StyleSheet.create({
     minWidth: 50,
   },
   versionSub: {
-    fontSize: 12,
-  },
-  footer: {
-    marginTop: 20,
-    marginBottom: 60,
-    alignItems: "center",
-  },
-  footerText: {
     fontSize: 12,
   },
 });

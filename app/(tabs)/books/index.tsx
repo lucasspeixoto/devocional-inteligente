@@ -111,7 +111,7 @@ export default function BooksListScreen() {
         style={[styles.centerContainer, { backgroundColor: colors.background }]}
       >
         <ErrorState
-          message="Não foi possível sincronizar os livros."
+          message="Não foi possível carregar o conteúdo bíblico local."
           onRetry={refresh}
         />
       </View>

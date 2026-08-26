@@ -1,11 +1,11 @@
-import React from "react";
+import React, { ComponentProps } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { typography } from "@/constants/typography";
 import { Ionicons } from "@expo/vector-icons";
 
 interface EmptyStateProps {
-  icon?: keyof typeof Ionicons.mappings | string;
+  icon?: ComponentProps<typeof Ionicons>["name"];
   title?: string;
   message: string;
 }
@@ -20,7 +20,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <View style={styles.container}>
       <Ionicons
-        name={icon as keyof typeof Ionicons.glyphMap}
+        name={icon}
         size={64}
         color={colors.textSecondary}
         style={styles.icon}
